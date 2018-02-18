@@ -33,7 +33,9 @@ extern int lcd_change_fil_state;
 extern bool fans_check_enabled;
 extern bool filament_autoload_enabled;
 
+#ifdef PAT9125
 extern bool fsensor_not_responding;
+#endif
 
 extern bool fsensor_enabled;
 
@@ -115,14 +117,18 @@ int8_t FSensorStateMenu = 1;
 
 int8_t CrashDetectMenu = 1;
 
+#ifdef PAT9125
 extern void fsensor_block();
 extern void fsensor_unblock();
 
 extern bool fsensor_enable();
 extern void fsensor_disable();
+#endif
 
+#ifdef TMC2130
 extern void crashdet_enable();
 extern void crashdet_disable();
+#endif
 
 
 #ifdef SNMM
@@ -1461,8 +1467,10 @@ void lcd_cooldown()
 static void lcd_menu_extruder_info()
 {
     int fan_speed_RPM[2];
-    
+
+#ifdef PAT9125    
     pat9125_update();
+#endif
     
     fan_speed_RPM[0] = 60*fan_speed[0];
     fan_speed_RPM[1] = 60*fan_speed[1];
@@ -1491,6 +1499,7 @@ static void lcd_menu_extruder_info()
 
     
     // Display X and Y difference from Filament sensor
+    #ifdef PAT9125
     
     lcd.setCursor(0, 2);
     lcd.print("Fil. Xd:");
@@ -1510,7 +1519,7 @@ static void lcd_menu_extruder_info()
     lcd.print(itostr3(pat9125_b));
     
     // Display LASER shutter time from Filament sensor
-    /* Shutter register is an index of LASER shutter time. It is automatically controlled by the chip’s internal
+    /* Shutter register is an index of LASER shutter time. It is automatically controlled by the chipï¿½s internal
      auto-exposure algorithm. When the chip is tracking on a good reflection surface, the Shutter is small.
      When the chip is tracking on a poor reflection surface, the Shutter is large. Value ranges from 0 to
      46. */
@@ -1520,6 +1529,7 @@ static void lcd_menu_extruder_info()
     lcd.print("Shut:    ");
     lcd.setCursor(15, 3);
     lcd.print(itostr3(pat9125_s));
+    #endif
 
     
     if (lcd_clicked())
@@ -1601,7 +1611,12 @@ static void lcd_menu_debug()
 static void lcd_menu_temperatures()
 {
 	fprintf_P(lcdout, PSTR(ESC_H(1,0)"Nozzle:   %d%c" ESC_H(1,1)"Bed:      %d%c"), (int)current_temperature[0], '\x01', (int)current_temperature_bed, '\x01');
-	fprintf_P(lcdout, PSTR(ESC_H(1,2)"Ambient:  %d%c" ESC_H(1,3)"PINDA:    %d%c"), (int)current_temperature_ambient, '\x01', (int)current_temperature_pinda, '\x01');
+#ifdef AMBIENT_THERMISTOR
+	fprintf_P(lcdout, PSTR(ESC_H(1,2)"Ambient:  %d%c", (int)current_temperature_ambient, '\x01');
+#endif
+#ifdef PINDA_THERMISTOR
+ fprintf_P(lcdout, PSTR(ESC_H(1,3)"PINDA:    %d%c", (int)current_temperature_pinda, '\x01');
+#endif
     if (lcd_clicked())
     {
         lcd_quick_feedback();
@@ -1972,7 +1987,11 @@ void lcd_LoadFilament()
 {
   if (degHotend0() > EXTRUDE_MINTEMP) 
   {
+    #ifdef PAT9125
 	  if (filament_autoload_enabled && fsensor_enabled)
+   #else
+   if (filament_autoload_enabled)
+   #endif
 	  {
 		  lcd_show_fullscreen_message_and_wait_P(MSG_AUTOLOADING_ENABLED);
 		  return;
@@ -3407,6 +3426,7 @@ static void lcd_silent_mode_set() {
 
 static void lcd_crash_mode_set()
 {
+  #ifdef TMC2130
 	CrashDetectMenu = !CrashDetectMenu; //set also from crashdet_enable() and crashdet_disable()
     if (CrashDetectMenu==0) {
         crashdet_disable();
@@ -3415,7 +3435,7 @@ static void lcd_crash_mode_set()
     }
 	if (IS_SD_PRINTING || is_usb_printing || (lcd_commands_type == LCD_COMMAND_V2_CAL)) lcd_goto_menu(lcd_tune_menu, 9);
 	else lcd_goto_menu(lcd_settings_menu, 9);
-    
+    #endif
 }
 
 static void lcd_set_lang(unsigned char lang) {
@@ -3430,6 +3450,7 @@ static void lcd_set_lang(unsigned char lang) {
 
 static void lcd_fsensor_state_set()
 {
+#ifdef PAT9125
 	FSensorStateMenu = !FSensorStateMenu; //set also from fsensor_enable() and fsensor_disable()
     if (FSensorStateMenu==0) {
         fsensor_disable();
@@ -3445,7 +3466,7 @@ static void lcd_fsensor_state_set()
     }
 	if (IS_SD_PRINTING || is_usb_printing || (lcd_commands_type == LCD_COMMAND_V2_CAL)) lcd_goto_menu(lcd_tune_menu, 7);
 	else lcd_goto_menu(lcd_settings_menu, 7);
-    
+#endif
 }
 
 #if !SDSORT_USES_RAM
@@ -3746,7 +3767,10 @@ void lcd_wizard(int state) {
 			state = 7;
 			break;
 		case 7: //load filament 
+    #ifdef PAT9125
 			fsensor_block();
+      #endif
+      
 			lcd_show_fullscreen_message_and_wait_P(MSG_WIZARD_LOAD_FILAMENT);
 			lcd_update_enable(false);
 			lcd_implementation_clear();
@@ -3755,7 +3779,9 @@ void lcd_wizard(int state) {
 			change_extr(0);
 #endif
 			gcode_M701();
+     #ifdef PAT9125
 			fsensor_unblock();
+      #endif
 			state = 9;
 			break;
 		case 8:
@@ -3853,6 +3879,7 @@ static void lcd_settings_menu()
   {
 	  MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
   }
+#ifdef PAT9125
 #ifndef DEBUG_DISABLE_FSENSORCHECK
   if (FSensorStateMenu == 0) {
       if (fsensor_not_responding){
@@ -3878,6 +3905,7 @@ static void lcd_settings_menu()
       
   }
 #endif //DEBUG_DISABLE_FSENSORCHECK
+#endif
 
   if (fans_check_enabled == true) {
 	  MENU_ITEM(function, MSG_FANS_CHECK_ON, lcd_set_fan_check);
@@ -5142,9 +5170,11 @@ static void lcd_main_menu()
   else 
   {
 	#ifndef SNMM
+  #ifdef PAT9125
 	if ( ((filament_autoload_enabled == true) && (fsensor_enabled == true)))
         MENU_ITEM(function, MSG_AUTOLOAD_FILAMENT, lcd_LoadFilament);
 	else
+  #endif
 		MENU_ITEM(function, MSG_LOAD_FILAMENT, lcd_LoadFilament);
 	MENU_ITEM(function, MSG_UNLOAD_FILAMENT, lcd_unLoadFilament);
 	#endif
@@ -6304,8 +6334,10 @@ static bool lcd_selftest_manual_fan_check(int _fan, bool check_opposite)
 		lcd.setCursor(0, 1); 
 		if(check_opposite == true) lcd_printPGM(MSG_SELFTEST_COOLING_FAN); 
 		else lcd_printPGM(MSG_SELFTEST_EXTRUDER_FAN);
+   #if defined(EXTRUDER_0_AUTO_FAN_PIN) && EXTRUDER_0_AUTO_FAN_PIN > -1
 		SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
 		WRITE(EXTRUDER_0_AUTO_FAN_PIN, 1);
+    #endif
 		break;
 	case 2:
 		// object cooling fan
@@ -6330,8 +6362,10 @@ static bool lcd_selftest_manual_fan_check(int _fan, bool check_opposite)
 		{
 		case 1:
 			// extruder cooling fan
+     #if defined(EXTRUDER_0_AUTO_FAN_PIN) && EXTRUDER_0_AUTO_FAN_PIN > -1
 			SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
 			WRITE(EXTRUDER_0_AUTO_FAN_PIN, 1);
+      #endif
 			break;
 		case 2:
 			// object cooling fan
@@ -6366,8 +6400,10 @@ static bool lcd_selftest_manual_fan_check(int _fan, bool check_opposite)
 
 	} while (!lcd_clicked());
 	KEEPALIVE_STATE(IN_HANDLER);
+  #if defined(EXTRUDER_0_AUTO_FAN_PIN) && EXTRUDER_0_AUTO_FAN_PIN > -1
 	SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
 	WRITE(EXTRUDER_0_AUTO_FAN_PIN, 0);
+  #endif
 	SET_OUTPUT(FAN_PIN);
 	analogWrite(FAN_PIN, 0);
 
@@ -6388,7 +6424,9 @@ static bool lcd_selftest_fan_dialog(int _fan)
 	case 0:
 		fanSpeed = 0;
 		manage_heater();			//turn off fan
+    #if defined(EXTRUDER_0_AUTO_FAN_PIN) && EXTRUDER_0_AUTO_FAN_PIN > -1
 		setExtruderAutoFanState(EXTRUDER_0_AUTO_FAN_PIN, 1); //extruder fan
+    #endif
 		delay(2000);				//delay_keep_alive would turn off extruder fan, because temerature is too low
 		manage_heater();			//count average fan speed from 2s delay and turn off fans
 		if (!fan_speed[0]) _result = false;

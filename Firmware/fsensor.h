@@ -1,5 +1,6 @@
 #ifndef FSENSOR_H
 #define FSENSOR_H
+#ifdef PAT9125
 
 #include "planner.h"
 
@@ -46,5 +47,5 @@ extern bool fsensor_not_responding;
 //autoload enable/disable flag
 extern bool fsensor_autoload_enabled;
 
-
+#endif
 #endif //FSENSOR_H

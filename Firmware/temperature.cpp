@@ -660,7 +660,12 @@ void manage_heater()
   #endif
 
     // Check if temperature is within the correct range
-    if(((current_temperature_ambient < MINTEMP_MINAMBIENT) || (current_temperature[e] > minttemp[e])) && (current_temperature[e] < maxttemp[e])) 
+#ifdef AMBIENT_THERMISTOR
+    if(((current_temperature_ambient < MINTEMP_MINAMBIENT) || (current_temperature[e] > minttemp[e])) && (current_temperature[e] < maxttemp[e]))
+#else
+    if((current_temperature[e] > minttemp[e]) && (current_temperature[e] < maxttemp[e]))
+#endif
+
     {
       soft_pwm[e] = (int)pid_output >> 1;
     }
@@ -746,8 +751,11 @@ void manage_heater()
     #else 
       pid_output = constrain(target_temperature_bed, 0, MAX_BED_POWER);
     #endif //PID_OPENLOOP
-
+#ifdef AMBIENT_THERMISTOR
 	  if(((current_temperature_bed > BED_MINTEMP) || (current_temperature_ambient < MINTEMP_MINAMBIENT)) && (current_temperature_bed < BED_MAXTEMP)) 
+#else
+    if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP))
+#endif
 	  {
 	    soft_pwm_bed = (int)pid_output >> 1;
 	  }
@@ -1339,10 +1347,14 @@ void temp_runaway_stop(bool isPreheat, bool isBed)
 		isBed ? LCD_ALERTMESSAGEPGM("BED PREHEAT ERROR") : LCD_ALERTMESSAGEPGM("PREHEAT ERROR");
 		SERIAL_ERROR_START;
 		isBed ? SERIAL_ERRORLNPGM(" THERMAL RUNAWAY ( PREHEAT HEATBED)") : SERIAL_ERRORLNPGM(" THERMAL RUNAWAY ( PREHEAT HOTEND)");
+    #if defined(EXTRUDER_0_AUTO_FAN_PIN) && EXTRUDER_0_AUTO_FAN_PIN > -1
 		SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
+    WRITE(EXTRUDER_0_AUTO_FAN_PIN, 1);
+    #endif
+    #if defined(FAN_PIN) && FAN_PIN > -1
 		SET_OUTPUT(FAN_PIN);
-		WRITE(EXTRUDER_0_AUTO_FAN_PIN, 1);
-		analogWrite(FAN_PIN, 255);
+    analogWrite(FAN_PIN, 255);
+    #endif
 		fanSpeed = 255;
 		delayMicroseconds(2000);
 	}
@@ -1408,11 +1420,18 @@ void max_temp_error(uint8_t e) {
 
     
   #endif
+  #if defined(EXTRUDER_0_AUTO_FAN_PIN) && EXTRUDER_0_AUTO_FAN_PIN > -1
     SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
+        WRITE(EXTRUDER_0_AUTO_FAN_PIN, 1);
+    #endif
+
+      #if defined(FAN_PIN) && FAN_PIN > -1
     SET_OUTPUT(FAN_PIN);
+        WRITE(FAN_PIN, 1);
+    #endif
     SET_OUTPUT(BEEPER);
-    WRITE(FAN_PIN, 1);
-    WRITE(EXTRUDER_0_AUTO_FAN_PIN, 1);
+
+
     WRITE(BEEPER, 1);
     // fanSpeed will consumed by the check_axes_activity() routine.
     fanSpeed=255;
@@ -1535,9 +1554,13 @@ void adc_ready(void) //callback from adc when sampling finished
 {
 	current_temperature_raw[0] = adc_values[0];
 	current_temperature_bed_raw = adc_values[2];
+  #ifdef PINDA_THERMISTOR
 	current_temperature_raw_pinda = adc_values[3];
+  #endif
 	current_voltage_raw_pwr = adc_values[4];
+  #ifdef AMBIENT_THERMISTOR
 	current_temperature_raw_ambient = adc_values[5];
+  #endif
 	current_voltage_raw_bed = adc_values[6];
 	temp_meas_ready = true;
 }
@@ -1950,6 +1973,7 @@ void check_min_temp_bed()
 void check_min_temp()
 {
 	static uint8_t heat_cycles = 0;
+ #ifdef AMBIENT_THERMISTOR
 	if (current_temperature_raw_ambient > OVERSAMPLENR*MINTEMP_MINAMBIENT_RAW)
 	{
 		if (READ(HEATER_0_PIN) == HIGH)
@@ -1965,11 +1989,14 @@ void check_min_temp()
 			heat_cycles = 0;
 		return;
 	}
+ #endif
 	check_min_temp_heater0();
 	check_min_temp_bed();
 }
 
+
 void check_fans() {
+  #ifdef FAN_TACH
 	if (READ(TACH_0) != fan_state[0]) {
 		fan_edge_counter[0] ++;
 		fan_state[0] = !fan_state[0];
@@ -1978,7 +2005,9 @@ void check_fans() {
 	//	fan_edge_counter[1] ++;
 	//	fan_state[1] = !fan_state[1];
 	//}
+ #endif
 }
+
 
 #ifdef PIDTEMP
 // Apply the scale factors to the PID values

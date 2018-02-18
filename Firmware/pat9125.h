@@ -1,6 +1,6 @@
 #ifndef PAT9125_H
 #define PAT9125_H
-
+#ifdef PAT9125
 //PAT9125 I2C
 #define PAT9125_I2C_ADDR        0x75  //ID=LO
 //#define PAT9125_I2C_ADDR        0x79  //ID=HI
@@ -41,5 +41,5 @@ extern unsigned char pat9125_rd_reg(unsigned char addr);
 extern void pat9125_wr_reg(unsigned char addr, unsigned char data);
 extern bool pat9125_wr_reg_verify(unsigned char addr, unsigned char data);
 
-
+#endif
 #endif //PAT9125_H

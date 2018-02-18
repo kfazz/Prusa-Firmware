@@ -591,6 +591,7 @@ bool filament_autoload_enabled = true;
 
 extern int8_t CrashDetectMenu;
 
+#ifdef TMC2130
 void crashdet_enable()
 {
 //	MYSERIAL.println("crashdet_enable"); 
@@ -642,7 +643,6 @@ void crashdet_detected(uint8_t mask)
 	    cmdqueue_pop_front();
 	}*/
 	st_synchronize();
-
 	lcd_update_enable(true);
 	lcd_implementation_clear();
 	lcd_update(2);
@@ -689,6 +689,7 @@ void crashdet_cancel()
 	card.closefile();
 	tmc2130_sg_stop_on_crash = true;
 }
+#endif
 
 void failstats_reset_print()
 {
@@ -965,7 +966,7 @@ void setup()
 	stdout = uartout;
 	SERIAL_PROTOCOLLNPGM("start");
 	SERIAL_ECHO_START;
-	printf_P(PSTR(" "FW_VERSION_FULL"\n"));
+	printf_P(PSTR(" " FW_VERSION_FULL "\n"));
 
 #if 0
 	SERIAL_ECHOLN("Reading eeprom from 0 to 100: start");
@@ -1069,7 +1070,7 @@ void setup()
 	digipot_i2c_init();
 #endif
 	setup_homepin();
-
+#ifdef TMC2130
   if (1) {
 ///    SERIAL_ECHOPGM("initial zsteps on power up: "); MYSERIAL.println(tmc2130_rd_MSCNT(Z_TMC2130_CS));
     // try to run to zero phase before powering the Z motor.    
@@ -1085,6 +1086,7 @@ void setup()
     }
 //    SERIAL_ECHOPGM("initial zsteps after reset: "); MYSERIAL.println(tmc2130_rd_MSCNT(Z_TMC2130_CS));
   }
+#endif
 
 #if defined(Z_AXIS_ALWAYS_ON)
 	enable_z();
@@ -1109,7 +1111,9 @@ void setup()
 		// EEPROM_LANG to number lower than 0x0ff.
 		// 1) Set a high power mode.
 		eeprom_write_byte((uint8_t*)EEPROM_SILENT, 0);
+#ifdef TMC2130
 		tmc2130_mode = TMC2130_MODE_NORMAL;
+#endif
 		eeprom_write_byte((uint8_t*)EEPROM_WIZARD_ACTIVE, 1); //run wizard
 
 	}
@@ -1165,12 +1169,16 @@ void setup()
 	}
 
 	check_babystep(); //checking if Z babystep is in allowed range
+#ifdef TMC2130
 	setup_uvlo_interrupt();
+#endif
 #ifndef DEBUG_DISABLE_FANCHECK
 	setup_fan_interrupt();
 #endif //DEBUG_DISABLE_FANCHECK
 #ifndef DEBUG_DISABLE_FSENSORCHECK
+#ifdef PAT9125
 	fsensor_setup_interrupt();
+#endif
 #endif //DEBUG_DISABLE_FSENSORCHECK
 	for (int i = 0; i<4; i++) EEPROM_read_B(EEPROM_BOWDEN_LENGTH + i * 2, &bowden_length[i]); 
 	
@@ -2128,11 +2136,15 @@ bool gcode_M45(bool onlyZ)
 		current_position[Z_AXIS] = MESH_HOME_Z_SEARCH;
 
 		bool endstops_enabled  = enable_endstops(true);
+#ifdef TMC2130
 		tmc2130_home_enter(Z_AXIS_MASK);
+#endif
 		plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], homing_feedrate[Z_AXIS] / 40, active_extruder);
 
 		st_synchronize();
+#ifdef TMC2130
 		tmc2130_home_exit();
+#endif
 		enable_endstops(endstops_enabled);
 
 		if (st_get_position_mm(Z_AXIS) == MESH_HOME_Z_SEARCH)
@@ -2312,7 +2324,7 @@ void process_commands()
 		  *(starpos) = '\0';
 	  lcd_setstatus(strchr_pointer + 5);
   }
-
+#ifdef TMC2130
   else if(code_seen("CRASH_DETECTED"))
   {
 	  uint8_t mask = 0;
@@ -2324,7 +2336,7 @@ void process_commands()
 	  crashdet_recover();
   else if(code_seen("CRASH_CANCEL"))
 	  crashdet_cancel();
-
+#endif
   else if(code_seen("PRUSA")){
 		if (code_seen("Ping")) {  //PRUSA Ping
 			if (farm_mode) {
@@ -5529,8 +5541,10 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
     #ifdef FILAMENTCHANGEENABLE
     case 600: //Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
     {
+#ifdef PAT9125
 		bool old_fsensor_enabled = fsensor_enabled;
 		fsensor_enabled = false; //temporary solution for unexpected restarting
+#endif
 
 		st_synchronize();
 		float target[4];
@@ -6038,7 +6052,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
       #endif
     }
     break;
-
+#ifdef TMC2130
 	case 910: // M910 TMC2130 init
     {
 		tmc2130_init();
@@ -6117,7 +6131,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         if (code_seen('E')) tmc2130_set_pwm_grad(3, code_value());
     }
     break;
-
+#endif
     case 350: // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
     {
       #if defined(X_MS1_PIN) && X_MS1_PIN > -1
@@ -6164,8 +6178,10 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 			extr_unload_all(); //unload all filaments
 		}
 #else
+#ifdef PAT9125
 		bool old_fsensor_enabled = fsensor_enabled;
 		fsensor_enabled = false;
+#endif
 		custom_message = true;
 		custom_message_type = 2;
 		lcd_setstatuspgm(MSG_UNLOADING_FILAMENT); 
@@ -6207,7 +6223,9 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 		lcd_setstatuspgm(WELCOME_MSG);
 		custom_message = false;
 		custom_message_type = 0;
+#ifdef PAT9125
 		fsensor_enabled = old_fsensor_enabled;
+#endif
 #endif	
 	}
 	break;
@@ -6632,6 +6650,7 @@ void handle_status_leds(void) {
 
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument set in Marlin.h
 {
+#ifdef PAT9125
 	if (fsensor_enabled && filament_autoload_enabled && !fsensor_M600 && !moves_planned() && !IS_SD_PRINTING && !is_usb_printing && (lcd_commands_type != LCD_COMMAND_V2_CAL))
 	{
 		if (fsensor_autoload_enabled)
@@ -6669,6 +6688,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
 	else
 		if (fsensor_autoload_enabled)
 			fsensor_autoload_check_stop();
+#endif
 
 #if defined(KILL_PIN) && KILL_PIN > -1
 	static int killCount = 0;   // make the inactivity button a bit less responsive
@@ -7465,6 +7485,7 @@ extern uint32_t sdpos_atomic;
 
 void uvlo_() 
 {
+#ifdef TMC2130
 	unsigned long time_start = millis();
 	bool sd_print = card.sdprinting;
     // Conserve power as soon as possible.
@@ -7611,7 +7632,10 @@ void uvlo_()
 #endif
         
     };
+#endif
 }
+
+
 
 void setup_fan_interrupt() {
 //INT7

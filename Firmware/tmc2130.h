@@ -1,5 +1,6 @@
 #ifndef TMC2130_H
 #define TMC2130_H
+#ifdef TMC2130
 
 extern uint8_t tmc2130_cs[4];
 
@@ -89,4 +90,5 @@ struct
 } tmc2130_axis_config;
 #pragma pack(pop)
 
+#endif
 #endif //TMC2130_H

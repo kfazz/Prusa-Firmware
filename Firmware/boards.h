@@ -3,6 +3,8 @@
 
 #define BOARD_UNKNOWN -1
 
+#define BOARD_RAMPS_14_EFB	43	
+
 #define BOARD_RAMBO             100  // Rambo - 100 (orig 301)
 
 #define BOARD_RAMBO_MINI_1_0    200  // Rambo-mini 1.0 - 200 (orig 102)

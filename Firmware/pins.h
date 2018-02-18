@@ -27,6 +27,10 @@
 #include "pins_Rambo.h"
 #endif //MOTHERBOARD == 100
 
+#if MOTHERBOARD == 43 // 43 - BOARD_RAMPS_14_EFB
+#include "pins_Ramps.h"
+#endif //MOTHERBOARD == 43
+
 #if MOTHERBOARD == 200 //200 - orig 102
 #include "pins_Rambo_1_0.h"
 #endif //MOTHERBOARD == 200

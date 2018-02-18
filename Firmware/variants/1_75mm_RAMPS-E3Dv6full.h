@@ -99,7 +99,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 /*------------------------------------
  TMC2130 default settings
  *------------------------------------*/
-#ifdef TMC2130
+
 #define TMC2130_FCLK 12000000       // fclk = 12MHz
 
 #define TMC2130_USTEPS_XY   16        // microstep resolution for XY axes
@@ -153,7 +153,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 //#define TMC2130_DEBUG
 //#define TMC2130_DEBUG_WR
 //#define TMC2130_DEBUG_RD
-#endif
+
 
 /*------------------------------------
  EXTRUDER SETTINGS
@@ -220,7 +220,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
  *------------------------------------*/
 
 // Filament change configuration
-//#define FILAMENTCHANGEENABLE
+#define FILAMENTCHANGEENABLE
 #ifdef FILAMENTCHANGEENABLE
 #define FILAMENTCHANGE_XPOS 211
 #define FILAMENTCHANGE_YPOS 0
@@ -267,7 +267,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define DIGIPOT_MOTOR_CURRENT_LOUD {135,135,135,135,135}
 
 // Motor Current settings for RAMBo mini PWM value = MotorCurrentSetting * 255 / range
-#if MOTHERBOARD ==43 || MOTHERBOARD == 200 || MOTHERBOARD == 203 || MOTHERBOARD == 303 || MOTHERBOARD == 304 || MOTHERBOARD == 305
+#if MOTHERBOARD == 200 || MOTHERBOARD == 203 || MOTHERBOARD == 303 || MOTHERBOARD == 304 || MOTHERBOARD == 305
 #define MOTOR_CURRENT_PWM_RANGE 2000
 #define DEFAULT_PWM_MOTOR_CURRENT  {400, 750, 750} // {XY,Z,E}
 #define DEFAULT_PWM_MOTOR_CURRENT_LOUD  {400, 750, 750} // {XY,Z,E}
@@ -486,12 +486,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // At 400 microsteps per mm, a full step lifts the Z axis by 0.04mm, and a stepper driver cycle is 0.16mm.
 // The following example, 12 * (4 * 16 / 400) = 12 * 0.16mm = 1.92mm.
 #define UVLO_Z_AXIS_SHIFT 1.92
-// If power panic occured, and the current temperature is higher then target temperature before interrupt minus this offset, print will be recovered automatically. 
-#define AUTOMATIC_UVLO_BED_TEMP_OFFSET 5
-//#define HEATBED_V2
 
-#define FARM_PREHEAT_HPB_TEMP 90
-#define FARM_PREHEAT_HOTEND_TEMP  210
-#define END_FILE_SECTION 10000 //number of bytes from end of file used for checking if file is complete
+//#define HEATBED_V2
 
 #endif //__CONFIGURATION_PRUSA_H

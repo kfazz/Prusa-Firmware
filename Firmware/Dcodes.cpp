@@ -340,6 +340,7 @@ void dcode_7()
 
 void dcode_8()
 {
+  #ifdef PINDA_THERMISTOR
 	printf_P(PSTR("D8 - Read/Write PINDA\n"));
 	uint8_t cal_status = calibration_status_pinda();
 	float temp_pinda = current_temperature_pinda;
@@ -377,6 +378,7 @@ void dcode_8()
 		}
 	}
 	printf_P(PSTR("temp_pinda=%d offset_z=%d.%03d\n"), (int)temp_pinda, (int)offset_z, ((int)(1000 * offset_z) % 1000));
+  #endif
 }
 
 const char* dcode_9_ADC_name(uint8_t i)
@@ -396,8 +398,12 @@ const char* dcode_9_ADC_name(uint8_t i)
 
 extern int current_temperature_raw[EXTRUDERS];
 extern int current_temperature_bed_raw;
+#ifdef PINDA_THERMISTOR
 extern int current_temperature_raw_pinda;
+#endif
+#ifdef AMBIENT_THERMISTOR
 extern int current_temperature_raw_ambient;
+#endif
 extern int current_voltage_raw_pwr;
 extern int current_voltage_raw_bed;
 uint16_t dcode_9_ADC_val(uint8_t i)
@@ -407,9 +413,13 @@ uint16_t dcode_9_ADC_val(uint8_t i)
 	case 0: return current_temperature_raw[0];
 	case 1: return 0;
 	case 2: return current_temperature_bed_raw;
+ #ifdef PINDA_THERMISTOR
 	case 3: return current_temperature_raw_pinda;
+ #endif
 	case 4: return current_voltage_raw_pwr;
+#ifdef AMBIENT_THERMISTOR
 	case 5: return current_temperature_raw_ambient;
+#endif
 	case 6: return current_voltage_raw_bed;
 	}
 	return 0;
@@ -461,6 +471,7 @@ extern void st_synchronize();
 
 void dcode_2130()
 {
+#ifdef TMC2130
 //	printf("test");
 	printf_P(PSTR("D2130 - TMC2130\n"));
 	uint8_t axis = 0xff;
@@ -484,10 +495,12 @@ void dcode_2130()
 		tmc2130_sg_meassure = 0xff;
 		printf_P(PSTR("Meassure avg = %d\n"), sg);
 	}
+ #endif
 }
 
 void dcode_9125()
 {
+  #ifdef PAT9125
 	LOG("D9125 - PAT9125\n");
 	if ((strchr_pointer[1+4] == '?') || (strchr_pointer[1+4] == 0))
 	{
@@ -523,6 +536,7 @@ void dcode_9125()
 		fsensor_log = (int)code_value();
 		LOG("fsensor_log=%d\n", fsensor_log);
 	}
+ #endif
 }
 
 #endif //DEBUG_DCODES
