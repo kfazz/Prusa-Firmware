@@ -1248,6 +1248,7 @@ void setup()
   // so the next time the firmware gets updated, it will know from which version it has been updated.
   update_current_firmware_version_to_eeprom();
 
+#ifdef TMC2130
   	tmc2130_home_origin[X_AXIS] = eeprom_read_byte((uint8_t*)EEPROM_TMC2130_HOME_X_ORIGIN);
 	tmc2130_home_bsteps[X_AXIS] = eeprom_read_byte((uint8_t*)EEPROM_TMC2130_HOME_X_BSTEPS);
 	tmc2130_home_fsteps[X_AXIS] = eeprom_read_byte((uint8_t*)EEPROM_TMC2130_HOME_X_FSTEPS);
@@ -1264,6 +1265,7 @@ void setup()
 
 	tmc2130_home_enabled = eeprom_read_byte((uint8_t*)EEPROM_TMC2130_HOME_ENABLED);
 	if (tmc2130_home_enabled == 0xff) tmc2130_home_enabled = 0;
+#endif
 
   if (eeprom_read_byte((uint8_t*)EEPROM_UVLO) == 1) { //previous print was terminated by UVLO
 /*
@@ -2859,21 +2861,28 @@ void process_commands()
       }
       #endif /* QUICK_HOME */
 
-	 
       if(home_x)
-	  {
+    {
+#ifdef TMC2130	 
 		if (!calib)
 			homeaxis(X_AXIS);
 		else
 			tmc2130_home_calibrate(X_AXIS);
-	  }
+#else
+      homeaxis(X_AXIS);
+#endif
+    }
 
       if(home_y)
 	  {
+#ifdef TMC2130
 		if (!calib)
 	        homeaxis(Y_AXIS);
 		else
 			tmc2130_home_calibrate(Y_AXIS);
+#else
+          homeaxis(Y_AXIS);
+#endif
 	  }
 
       if(code_seen(axis_codes[X_AXIS]) && code_value_long() != 0)

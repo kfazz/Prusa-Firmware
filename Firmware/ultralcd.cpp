@@ -3977,12 +3977,13 @@ static void lcd_selftest_()
 	lcd_selftest();
 }
 
-
+  #ifdef TMC2130
 static void lcd_experimantal_menu();
 static void lcd_homing_accuracy_menu();
 
 static void lcd_accurate_home_set()
 {
+
 	tmc2130_home_enabled = tmc2130_home_enabled?0:1;
 	eeprom_update_byte((uint8_t*)EEPROM_TMC2130_HOME_ENABLED, tmc2130_home_enabled);
 }
@@ -4188,7 +4189,7 @@ static void lcd_experimantal_menu()
 	MENU_ITEM(submenu, PSTR("uStep linearity"), lcd_ustep_linearity_menu);
 	END_MENU();
 }
-
+#endif
 
 static void lcd_calibration_menu()
 {
@@ -5401,7 +5402,9 @@ static void lcd_main_menu()
 	#endif
 	MENU_ITEM(submenu, MSG_SETTINGS, lcd_settings_menu);
     if(!isPrintPaused) MENU_ITEM(submenu, MSG_MENU_CALIBRATION, lcd_calibration_menu);
+#ifdef TMC2130
 	MENU_ITEM(submenu, PSTR("Experimantal"), lcd_experimantal_menu);
+#endif
   }
 
   if (!is_usb_printing && (lcd_commands_type != LCD_COMMAND_V2_CAL))
@@ -5840,6 +5843,7 @@ char *mres_to_str3(const uint8_t &x)
 
 extern char conv[8];
 
+#ifdef TMC2130
 // Convert tmc2130 wfac to string 
 char *wfac_to_str5(const uint8_t &x)
 {
@@ -5852,6 +5856,7 @@ char *wfac_to_str5(const uint8_t &x)
 	conv[5] = 0;
 	return conv;
 }
+#endif
 
 menu_edit_type(uint8_t, wfac, wfac_to_str5, 1)
 menu_edit_type(uint8_t, mres, mres_to_str3, 1)
