@@ -2123,8 +2123,10 @@ bool gcode_M45(bool onlyZ)
 		if(!onlyZ)
 		{
 			KEEPALIVE_STATE(PAUSED_FOR_USER);
+#ifdef HEATBED_V2
 			bool result = lcd_show_fullscreen_message_yes_no_and_wait_P(MSG_STEEL_SHEET_CHECK, false, false);
 			if(result) lcd_show_fullscreen_message_and_wait_P(MSG_REMOVE_STEEL_SHEET);
+#endif
 			lcd_show_fullscreen_message_and_wait_P(MSG_CONFIRM_NOZZLE_CLEAN);
 		    lcd_show_fullscreen_message_and_wait_P(MSG_PAPER);
 			KEEPALIVE_STATE(IN_HANDLER);

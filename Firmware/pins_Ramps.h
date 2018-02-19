@@ -31,7 +31,7 @@
 #define X_DIR_PIN		55
 #define X_MIN_PIN		3
 #define X_MAX_PIN		2
-#define X_ENABLE_PIN		29
+#define X_ENABLE_PIN		38
 #define X_MS1_PIN		-1
 #define X_MS2_PIN		-1
 
@@ -60,13 +60,13 @@
 #define Z_MS2_PIN		-1
 
 #define HEATER_BED_PIN       8
-#define TEMP_BED_PIN         14
+#define TEMP_BED_PIN         14 //A14
 
 #define HEATER_0_PIN         10
-#define TEMP_0_PIN           13
+#define TEMP_0_PIN           13 //A13
 
 #define HEATER_1_PIN        -1
-#define TEMP_1_PIN           15
+#define TEMP_1_PIN           15 //A15
 
 #define HEATER_2_PIN        -1
 #define TEMP_2_PIN          -1
