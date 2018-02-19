@@ -76,25 +76,35 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 #define Z_AXIS_ALWAYS_ON 1
 
+#ifdef DEBUG_BUILD
 //DEBUG
 #define DEBUG_DCODES //D codes
-#if 0
-#define DEBUG_DISABLE_XMINLIMIT  //x min limit ignored
-#define DEBUG_DISABLE_XMAXLIMIT  //x max limit ignored
-#define DEBUG_DISABLE_YMINLIMIT  //y min limit ignored
-#define DEBUG_DISABLE_YMAXLIMIT  //y max limit ignored
-#define DEBUG_DISABLE_ZMINLIMIT  //z min limit ignored
-#define DEBUG_DISABLE_ZMAXLIMIT  //z max limit ignored
-#define DEBUG_DISABLE_STARTMSGS //no startup messages
-#define DEBUG_DISABLE_MINTEMP   //mintemp error ignored
-#define DEBUG_DISABLE_SWLIMITS  //sw limits ignored
-#define DEBUG_DISABLE_LCD_STATUS_LINE  //empty four lcd line
-#define DEBUG_DISABLE_PREVENT_EXTRUDER //cold extrusion and long extrusion allowed
-#define DEBUG_DISABLE_PRUSA_STATISTICS //disable prusa_statistics() mesages
+#define DEBUG_STACK_MONITOR        //Stack monitor in stepper ISR
+//#define DEBUG_FSENSOR_LOG          //Reports fsensor status to serial
+//#define DEBUG_CRASHDET_COUNTERS  //Display crash-detection counters on LCD
+//#define DEBUG_RESUME_PRINT       //Resume/save print debug enable 
+//#define DEBUG_UVLO_AUTOMATIC_RECOVER // Power panic automatic recovery debug output 
+//#define DEBUG_DISABLE_XMINLIMIT  //x min limit ignored
+//#define DEBUG_DISABLE_XMAXLIMIT  //x max limit ignored
+//#define DEBUG_DISABLE_YMINLIMIT  //y min limit ignored
+//#define DEBUG_DISABLE_YMAXLIMIT  //y max limit ignored
+//#define DEBUG_DISABLE_ZMINLIMIT  //z min limit ignored
+//#define DEBUG_DISABLE_ZMAXLIMIT  //z max limit ignored
+//#define DEBUG_DISABLE_STARTMSGS //no startup messages 
+//#define DEBUG_DISABLE_MINTEMP   //mintemp error ignored
+//#define DEBUG_DISABLE_SWLIMITS  //sw limits ignored
+//#define DEBUG_DISABLE_LCD_STATUS_LINE  //empty four lcd line
+//#define DEBUG_DISABLE_PREVENT_EXTRUDER //cold extrusion and long extrusion allowed
+//#define DEBUG_DISABLE_PRUSA_STATISTICS //disable prusa_statistics() mesages
 //#define DEBUG_XSTEP_DUP_PIN 21   //duplicate x-step output to pin 21 (SCL on P3)
 //#define DEBUG_YSTEP_DUP_PIN 21   //duplicate y-step output to pin 21 (SCL on P3)
 //#define DEBUG_BLINK_ACTIVE
-#endif
+//#define DEBUG_DISABLE_FANCHECK     //disable fan check (no ISR INT7, check disabled)
+//#define DEBUG_DISABLE_FSENSORCHECK //disable fsensor check (no ISR INT7, check disabled)
+//#define DEBUG_DUMP_TO_2ND_SERIAL   //dump received characters to 2nd serial line
+#define DEBUG_STEPPER_TIMER_MISSED // Stop on stepper timer overflow, beep and display a message.
+#define PLANNER_DIAGNOSTICS // Show the planner queue status on printer display.
+#endif /* DEBUG_BUILD */
 
 /*------------------------------------
  TMC2130 default settings
