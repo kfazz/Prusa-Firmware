@@ -157,8 +157,9 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define TMC2130_SG_DELTA      128    // stallguard delta [usteps] (minimum usteps before stallguard readed - SW homing)
 
 //new settings is possible for vsense = 1, running current value > 31 set vsense to zero and shift both currents by 1 bit right (Z axis only)
-#define TMC2130_CURRENTS_H {3, 3, 5, 8}  // default holding currents for all axes
-#define TMC2130_CURRENTS_R {13, 31, 20, 22}  // default running currents for all axes
+#define TMC2130_CURRENTS_H {16, 20, 28, 36}  // default holding currents for all axes
+#define TMC2130_CURRENTS_R {16, 20, 28, 36}  // default running currents for all axes
+#define TMC2130_UNLOAD_CURRENT_R 12			 // lowe current for M600 to protect filament sensor 
 
 //#define TMC2130_DEBUG
 //#define TMC2130_DEBUG_WR
