@@ -1,27 +1,41 @@
 #ifndef TMC2130_H
 #define TMC2130_H
-#ifdef TMC2130
 
-extern uint8_t tmc2130_cs[4];
 
 //mode
 extern uint8_t tmc2130_mode;
 //holding and running currents
 extern uint8_t tmc2130_current_h[4];
 extern uint8_t tmc2130_current_r[4];
-//flags for axis stall detection
+//microstep resolution (0 means 256usteps, 8 means 1ustep
+extern uint8_t tmc2130_mres[4];
 
+//flags for axis stall detection
 extern uint8_t tmc2130_sg_thr[4];
 
 extern bool tmc2130_sg_stop_on_crash;
 extern uint8_t tmc2130_sg_crash; //crash mask
 
 extern uint8_t tmc2130_sg_meassure;
-extern uint16_t tmc2130_sg_meassure_cnt;
+extern uint32_t tmc2130_sg_meassure_cnt;
 extern uint32_t tmc2130_sg_meassure_val;
+
+extern uint8_t tmc2130_sg_homing_axes_mask;
 
 #define TMC2130_MODE_NORMAL 0
 #define TMC2130_MODE_SILENT 1
+
+#define TMC2130_WAVE_FAC1000_MIN  30
+#define TMC2130_WAVE_FAC1000_MAX 200
+#define TMC2130_WAVE_FAC1000_STP   1
+
+extern uint8_t tmc2130_home_enabled;
+extern uint8_t tmc2130_home_origin[2];
+extern uint8_t tmc2130_home_bsteps[2];
+extern uint8_t tmc2130_home_fsteps[2];
+
+extern uint8_t tmc2130_wave_fac[4];
+
 
 //initialize tmc2130
 extern void tmc2130_init();
@@ -55,7 +69,11 @@ extern void tmc2130_set_pwm_ampl(uint8_t axis, uint8_t pwm_ampl);
 extern void tmc2130_set_pwm_grad(uint8_t axis, uint8_t pwm_ampl);
 
 
-extern uint16_t tmc2130_rd_MSCNT(uint8_t cs);
+extern uint16_t tmc2130_rd_MSCNT(uint8_t axis);
+extern uint32_t tmc2130_rd_MSCURACT(uint8_t axis);
+
+extern uint8_t tmc2130_usteps2mres(uint16_t usteps);
+#define tmc2130_mres2usteps(mres) ((uint16_t)256 >> mres)
 
 extern bool tmc2130_wait_standstill_xy(int timeout);
 
@@ -90,5 +108,19 @@ struct
 } tmc2130_axis_config;
 #pragma pack(pop)
 
-#endif
+extern uint16_t tmc2130_get_res(uint8_t axis);
+extern void tmc2130_set_res(uint8_t axis, uint16_t res);
+extern uint8_t tmc2130_get_pwr(uint8_t axis);
+extern void tmc2130_set_pwr(uint8_t axis, uint8_t pwr);
+extern uint8_t tmc2130_get_inv(uint8_t axis);
+extern uint8_t tmc2130_get_dir(uint8_t axis);
+extern void tmc2130_set_dir(uint8_t axis, uint8_t dir);
+extern void tmc2130_do_step(uint8_t axis);
+extern void tmc2130_do_steps(uint8_t axis, uint16_t steps, uint8_t dir, uint16_t delay_us);
+extern void tmc2130_goto_step(uint8_t axis, uint8_t step, uint8_t dir, uint16_t delay_us, uint16_t microstep_resolution);
+extern void tmc2130_get_wave(uint8_t axis, uint8_t* data, FILE* stream);
+extern void tmc2130_set_wave(uint8_t axis, uint8_t amp, uint8_t fac1000);
+
+extern bool tmc2130_home_calibrate(uint8_t axis);
+
 #endif //TMC2130_H

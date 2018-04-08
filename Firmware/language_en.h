@@ -102,8 +102,12 @@
 #define(length=20) MSG_CHANGING_FILAMENT	"Changing filament!"
 
 
-#define MSG_SILENT_MODE_ON					"Mode    [Stealth]"
-#define MSG_SILENT_MODE_OFF					"Mode     [Normal]" 
+#define MSG_SILENT_MODE_ON					"Mode     [silent]"
+#define MSG_SILENT_MODE_OFF					"Mode [high power]" 
+#define MSG_AUTO_MODE_ON					"Mode [auto power]"
+#define MSG_STEALTH_MODE_OFF				"Mode     [Normal]"
+#define MSG_STEALTH_MODE_ON					"Mode    [Stealth]"
+
 #define(length=20) MSG_REBOOT				"Reboot the printer"
 #define(length=20) MSG_TAKE_EFFECT			" for take effect"											
 
@@ -356,6 +360,8 @@
 #define MSG_FSENSOR_OFF											"Fil. sensor [off]"
 #define MSG_FSENSOR_NA											"Fil. sensor [N/A]"
 #define MSG_FSENSOR_ON											"Fil. sensor  [on]"
+#define(length=9)MSG_EXTRUDER_CORRECTION                        "E-correct"
+#define(length=6)MSG_EXTRUDER_CORRECTION_OFF                    "  [off"
 
 #define(length=20, lines=4) MSG_PLACE_STEEL_SHEET				"Please place steel sheet on heatbed."
 #define(length=20, lines=4) MSG_REMOVE_STEEL_SHEET				"Please remove steel sheet from heatbed."
@@ -412,3 +418,7 @@
 #define(length=20, lines=8) MSG_FW_VERSION_ALPHA		 "You are using firmware alpha version. This is development version. Using this version is not recommended and may cause printer damage." 
 #define(length=20, lines=8) MSG_FW_VERSION_BETA			 "You are using firmware beta version. This is development version. Using this version is not recommended and may cause printer damage."
 #define(length=20, lines=8) MSG_FW_VERSION_RC			 "This firmware version is release candidate. Some of the features may not work properly."
+#define(length=20, lines=8) MSG_FORCE_SELFTEST			 "Selftest will be run to calibrate accurate sensorless rehoming."
+#define(length=20, lines=4) MSG_CHANGED_MOTHERBOARD		 "Warning: motherboard type changed."
+#define(length=20, lines=4) MSG_CHANGED_PRINTER			 "Warning: printer type changed."
+#define(length=20, lines=4) MSG_CHANGED_BOTH			 "Warning: both printer type and motherboard type changed."

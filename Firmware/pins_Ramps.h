@@ -60,10 +60,12 @@
 #define Z_MS2_PIN		-1
 
 #define HEATER_BED_PIN       8
-#define TEMP_BED_PIN         14 //A14
+	/*Array index for adc_samples[], not pin number */
+#define TEMP_BED_PIN        1 //A14
 
 #define HEATER_0_PIN         10
-#define TEMP_0_PIN           13 //A13
+	/*Array index for adc_samples[], not pin number */
+#define TEMP_0_PIN           0 //A13
 
 #define HEATER_1_PIN        -1
 #define TEMP_1_PIN           15 //A15
@@ -71,9 +73,13 @@
 #define HEATER_2_PIN        -1
 #define TEMP_2_PIN          -1
 
-#define TEMP_AMBIENT_PIN     -1
+/* not used, added to satisfy code in temperature.cpp
+ * TODO: tape a thermistor to z probe and see if it works 
+ * TODO: add another thermistor to ramps case and measure ambient temps */
 
-#define TEMP_PINDA_PIN       -1
+#define TEMP_AMBIENT_PIN        6 //A6
+
+#define TEMP_PINDA_PIN          1 //A1
 
 #define VOLT_PWR_PIN         -1
 #define VOLT_BED_PIN         -1

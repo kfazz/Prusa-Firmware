@@ -7,6 +7,7 @@
 
 // Printer revision
 #define FILAMENT_SIZE "1_75mm_RAMPS"
+#define PRINTER_TYPE PRINTER_MK2
 #define NOZZLE_TYPE "E3Dv6full"
 
 // Developer flag
@@ -17,7 +18,10 @@
 
 // Electronics
 #define MOTHERBOARD BOARD_RAMPS_14_EFB
+//#define HAS_SECOND_SERIAL_PORT
 
+// Prusa Single extruder multiple material suport
+//#define SNMM
 
 // Uncomment the below for the E3D PT100 temperature sensor (with or without PT100 Amplifier)
 //#define E3D_PT100_EXTRUDER_WITH_AMP
@@ -31,13 +35,24 @@
  *------------------------------------*/
 
 // Steps per unit {X,Y,Z,E}
-//#define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,140}
+#ifdef SNMM
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,140}
+#else
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,156.46}
+#endif
 
 // Endstop inverting
 const bool X_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+
+// Direction inverting
+#define INVERT_X_DIR false	// for Mendel set to false, for Orca set to true
+#define INVERT_Y_DIR false	// for Mendel set to true, for Orca set to false
+#define INVERT_Z_DIR false	// for Mendel set to false, for Orca set to true
+#define INVERT_E0_DIR true	// for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E1_DIR false	// for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E2_DIR false	// for direct drive extruder v9 set to true, for geared extruder set to false
 
 // Home position
 #define MANUAL_X_HOME_POS 0
@@ -62,39 +77,90 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define Z_PAUSE_LIFT 20
 
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {2500, 3000, 800, 0}  // set the homing speeds (mm/min) // 3000 is also valid for stallGuard homing. Valid range: 2200 - 3000
+#define HOMING_FEEDRATE {3000, 3000, 800, 0}  // set the homing speeds (mm/min) // 3000 is also valid for stallGuard homing. Valid range: 2200 - 3000
 
 //#define DEFAULT_MAX_FEEDRATE          {400, 400, 12, 120}    // (mm/sec)
 #define DEFAULT_MAX_FEEDRATE          {500, 500, 12, 120}    // (mm/sec)
-#define DEFAULT_MAX_ACCELERATION      {1000, 1000, 200, 5000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
+#define DEFAULT_MAX_ACCELERATION      {9000, 9000, 500, 10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
-#define DEFAULT_ACCELERATION          1250   // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  1250   // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_ACCELERATION          1500   // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  1500   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
-#define MANUAL_FEEDRATE {2700, 2700, 1000, 100}   // set the speeds for manual moves (mm/min)
+#define MANUAL_FEEDRATE {3000, 3000, 1000, 100}   // set the speeds for manual moves (mm/min)
 //#define MAX_SILENT_FEEDRATE           2700   //
 
 #define Z_AXIS_ALWAYS_ON 1
 
-//DEBUG
+// Automatic recovery after crash is detected
+//#define AUTOMATIC_RECOVERY_AFTER_CRASH
+
+// New XYZ calibration
+//#define NEW_XYZCAL
+
+// Do not use Arduino SPI 
+//#define NEW_SPI
+
+// Watchdog support
+//#define WATCHDOG
+
+// Power panic
+//#define UVLO_SUPPORT
+
+// Fan check
+//#define FANCHECK
+
+// Safety timer
+//#define SAFETYTIMER
+
+// Filament sensor
+//#define PAT9125
+
+
+// Disable some commands
+//#define _DISABLE_M42_M226
+
+// Minimum ambient temperature limit to start triggering MINTEMP errors [C]
+// this value is litlebit higher that real limit, because ambient termistor is on the board and is temperated from it,
+// temperature inside the case is around 31C for ambient temperature 25C, when the printer is powered on long time and idle
+// the real limit is 15C (same as MINTEMP limit), this is because 15C is end of scale for both used thermistors (bed, heater)
+#define MINTEMP_MINAMBIENT      25
+#define MINTEMP_MINAMBIENT_RAW  978
+
+//#define DEBUG_BUILD
+#ifdef DEBUG_BUILD
+//#define _NO_ASM
 #define DEBUG_DCODES //D codes
-#if 0
-#define DEBUG_DISABLE_XMINLIMIT  //x min limit ignored
-#define DEBUG_DISABLE_XMAXLIMIT  //x max limit ignored
-#define DEBUG_DISABLE_YMINLIMIT  //y min limit ignored
-#define DEBUG_DISABLE_YMAXLIMIT  //y max limit ignored
-#define DEBUG_DISABLE_ZMINLIMIT  //z min limit ignored
-#define DEBUG_DISABLE_ZMAXLIMIT  //z max limit ignored
-#define DEBUG_DISABLE_STARTMSGS //no startup messages
-#define DEBUG_DISABLE_MINTEMP   //mintemp error ignored
-#define DEBUG_DISABLE_SWLIMITS  //sw limits ignored
-#define DEBUG_DISABLE_LCD_STATUS_LINE  //empty four lcd line
-#define DEBUG_DISABLE_PREVENT_EXTRUDER //cold extrusion and long extrusion allowed
-#define DEBUG_DISABLE_PRUSA_STATISTICS //disable prusa_statistics() mesages
+#define DEBUG_STACK_MONITOR        //Stack monitor in stepper ISR
+//#define DEBUG_FSENSOR_LOG          //Reports fsensor status to serial
+//#define DEBUG_CRASHDET_COUNTERS  //Display crash-detection counters on LCD
+//#define DEBUG_RESUME_PRINT       //Resume/save print debug enable 
+//#define DEBUG_UVLO_AUTOMATIC_RECOVER // Power panic automatic recovery debug output 
+//#define DEBUG_DISABLE_XMINLIMIT  //x min limit ignored
+//#define DEBUG_DISABLE_XMAXLIMIT  //x max limit ignored
+//#define DEBUG_DISABLE_YMINLIMIT  //y min limit ignored
+//#define DEBUG_DISABLE_YMAXLIMIT  //y max limit ignored
+//#define DEBUG_DISABLE_ZMINLIMIT  //z min limit ignored
+//#define DEBUG_DISABLE_ZMAXLIMIT  //z max limit ignored
+#define DEBUG_DISABLE_STARTMSGS //no startup messages 
+//#define DEBUG_DISABLE_MINTEMP   //mintemp error ignored
+//#define DEBUG_DISABLE_SWLIMITS  //sw limits ignored
+//#define DEBUG_DISABLE_LCD_STATUS_LINE  //empty four lcd line
+//#define DEBUG_DISABLE_PREVENT_EXTRUDER //cold extrusion and long extrusion allowed
+//#define DEBUG_DISABLE_PRUSA_STATISTICS //disable prusa_statistics() mesages
+//#define DEBUG_DISABLE_FORCE_SELFTEST //disable force selftest
 //#define DEBUG_XSTEP_DUP_PIN 21   //duplicate x-step output to pin 21 (SCL on P3)
 //#define DEBUG_YSTEP_DUP_PIN 21   //duplicate y-step output to pin 21 (SCL on P3)
 //#define DEBUG_BLINK_ACTIVE
-#endif
+//#define DEBUG_DISABLE_FANCHECK     //disable fan check (no ISR INT7, check disabled)
+//#define DEBUG_DISABLE_FSENSORCHECK //disable fsensor check (no ISR INT7, check disabled)
+#define DEBUG_DUMP_TO_2ND_SERIAL   //dump received characters to 2nd serial line
+#define DEBUG_STEPPER_TIMER_MISSED // Stop on stepper timer overflow, beep and display a message.
+#define PLANNER_DIAGNOSTICS // Show the planner queue status on printer display.
+#endif /* DEBUG_BUILD */
+
+//#define EXPERIMENTAL_FEATURES
+//#define TMC2130_LINEARITY_CORRECTION
+//#define TMC2130_VARIABLE_RESOLUTION
 
 /*------------------------------------
  TMC2130 default settings
@@ -147,8 +213,9 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define TMC2130_SG_DELTA      128    // stallguard delta [usteps] (minimum usteps before stallguard readed - SW homing)
 
 //new settings is possible for vsense = 1, running current value > 31 set vsense to zero and shift both currents by 1 bit right (Z axis only)
-#define TMC2130_CURRENTS_H {3, 3, 5, 8}  // default holding currents for all axes
-#define TMC2130_CURRENTS_R {13, 31, 20, 22}  // default running currents for all axes
+#define TMC2130_CURRENTS_H {16, 20, 28, 36}  // default holding currents for all axes
+#define TMC2130_CURRENTS_R {16, 20, 28, 36}  // default running currents for all axes
+#define TMC2130_UNLOAD_CURRENT_R 12			 // lowe current for M600 to protect filament sensor 
 
 //#define TMC2130_DEBUG
 //#define TMC2130_DEBUG_WR
@@ -194,7 +261,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define EXTRUDE_MINTEMP 130
 
 // Extruder cooling fans
-#define EXTRUDER_0_AUTO_FAN_PIN   -1
+#define EXTRUDER_0_AUTO_FAN_PIN   8
 #define EXTRUDER_1_AUTO_FAN_PIN   -1
 #define EXTRUDER_2_AUTO_FAN_PIN   -1
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 50
@@ -268,6 +335,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 // Motor Current settings for RAMBo mini PWM value = MotorCurrentSetting * 255 / range
 #if MOTHERBOARD ==43 || MOTHERBOARD == 200 || MOTHERBOARD == 203 || MOTHERBOARD == 303 || MOTHERBOARD == 304 || MOTHERBOARD == 305
+//#if MOTHERBOARD == 200 || MOTHERBOARD == 203
 #define MOTOR_CURRENT_PWM_RANGE 2000
 #define DEFAULT_PWM_MOTOR_CURRENT  {400, 750, 750} // {XY,Z,E}
 #define DEFAULT_PWM_MOTOR_CURRENT_LOUD  {400, 750, 750} // {XY,Z,E}
@@ -439,8 +507,8 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #else
 #define TEMP_SENSOR_BED 1
 #endif
-#define TEMP_SENSOR_PINDA 1
-#define TEMP_SENSOR_AMBIENT 2000
+//#define TEMP_SENSOR_PINDA 1
+//#define TEMP_SENSOR_AMBIENT 2000
 
 #define STACK_GUARD_TEST_VALUE 0xA2A2
 
@@ -466,12 +534,15 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define PING_TIME_LONG 600 //10 min; used when length of commands buffer > 0 to avoid false triggering when dealing with long gcodes
 #define PING_ALLERT_PERIOD 60 //time in s
 
+#define NC_TIME 10 //time in s for periodic important status messages sending which needs reponse from monitoring
+#define NC_BUTTON_LONG_PRESS 15 //time in s
+
 #define LONG_PRESS_TIME 1000 //time in ms for button long press
 #define BUTTON_BLANKING_TIME 200 //time in ms for blanking after button release
 
 #define DEFAULT_PID_TEMP 210
 
-#define MIN_PRINT_FAN_SPEED 75
+//#define MIN_PRINT_FAN_SPEED 75
 
 #ifdef SNMM
 #define DEFAULT_RETRACTION 4 //used for PINDA temp calibration and pause print
