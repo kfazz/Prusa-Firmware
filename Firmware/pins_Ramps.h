@@ -9,7 +9,7 @@
   #error Oops!  Make sure you have 'Arduino Mega 2560' selected from the 'Tools -> Boards' menu.
 #endif
 
-//#define TMC2130		//enable TMC2130 stepper support
+#define TMC2130		//enable TMC2130 stepper support
 //#define PAT9125		//enable MK3 filament sensor support
 
 //#define SWI2C                    // enable software i2c
@@ -23,8 +23,8 @@
 //#define PAT9125_HWI2C
 
 #ifdef TMC2130
-#define X_TMC2130_CS		53
-#define X_TMC2130_DIAG		-1
+#define X_TMC2130_CS		59
+#define X_TMC2130_DIAG		2
 #endif
 
 #define X_STEP_PIN		54
@@ -36,8 +36,8 @@
 #define X_MS2_PIN		-1
 
 #ifdef TMC2130
-#define Y_TMC2130_CS		49
-#define Y_TMC2130_DIAG		-1
+#define Y_TMC2130_CS		64
+#define Y_TMC2130_DIAG		15
 #endif
 #define Y_STEP_PIN		60
 #define Y_DIR_PIN		61
@@ -48,8 +48,8 @@
 #define Y_MS2_PIN		-1
 
 #ifdef TMC2130
-#define Z_TMC2130_CS		40
-#define Z_TMC2130_DIAG		-1
+#define Z_TMC2130_CS		44
+#define Z_TMC2130_DIAG		19
 #endif
 #define Z_STEP_PIN		46
 #define Z_DIR_PIN		48
@@ -79,8 +79,8 @@
 #define VOLT_BED_PIN         -1
 
 #ifdef TMC2130
-#define E0_TMC2130_CS		42
-#define E0_TMC2130_DIAG		-1
+#define E0_TMC2130_CS		63
+#define E0_TMC2130_DIAG		40
 #endif
 
 #define E0_STEP_PIN         26
