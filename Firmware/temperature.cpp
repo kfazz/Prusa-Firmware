@@ -32,7 +32,6 @@
 #include "Marlin.h"
 #include "ultralcd.h"
 #include "temperature.h"
-#include "watchdog.h"
 #include "cardreader.h"
 
 #include "Sd2PinMap.h"
@@ -104,9 +103,6 @@ unsigned char soft_pwm_bed;
   volatile int babystepsTodo[3]={0,0,0};
 #endif
 
-#ifdef FILAMENT_SENSOR
-  int current_raw_filwidth = 0;  //Holds measured filament diameter - one extruder only
-#endif  
 //===========================================================================
 //=============================private variables============================
 //===========================================================================
@@ -186,6 +182,7 @@ static int bed_maxttemp_raw = HEATER_BED_RAW_HI_TEMP;
 static float analog2temp(int raw, uint8_t e);
 static float analog2tempBed(int raw);
 static float analog2tempAmbient(int raw);
+static float analog2tempPINDA(int raw);
 static void updateTemperaturesFromRawValues();
 
 enum TempRunawayStates
@@ -204,9 +201,6 @@ unsigned long watchmillis[EXTRUDERS] = ARRAY_BY_EXTRUDERS(0,0,0);
 #define SOFT_PWM_SCALE 0
 #endif
 
-#ifdef FILAMENT_SENSOR
-  static int meas_shift_index;  //used to point to a delayed sample in buffer for filament width sensor
-#endif
 //===========================================================================
 //=============================   functions      ============================
 //===========================================================================
@@ -268,7 +262,9 @@ unsigned long watchmillis[EXTRUDERS] = ARRAY_BY_EXTRUDERS(0,0,0);
 
 
  for(;;) {
-	wdt_reset();
+#ifdef WATCHDOG
+    wdt_reset();
+#endif //WATCHDOG
     if(temp_meas_ready == true) { // temp sample ready
       updateTemperaturesFromRawValues();
 
@@ -454,6 +450,8 @@ void setExtruderAutoFanState(int pin, bool state)
   analogWrite(pin, newFanSpeed);
 }
 
+#if (defined(FANCHECK) && (((defined(TACH_0) && (TACH_0 >-1)) || (defined(TACH_1) && (TACH_1 > -1)))))
+
 void countFanSpeed()
 {
 	//SERIAL_ECHOPGM("edge counter 1:"); MYSERIAL.println(fan_edge_counter[1]);
@@ -473,15 +471,23 @@ void checkFanSpeed()
 {
 	fans_check_enabled = (eeprom_read_byte((uint8_t*)EEPROM_FAN_CHECK_ENABLED) > 0);
 	static unsigned char fan_speed_errors[2] = { 0,0 };
-
-	if (fan_speed[0] == 0 && (current_temperature[0] > EXTRUDER_AUTO_FAN_TEMPERATURE)) fan_speed_errors[0]++;
+#if (defined(FANCHECK) && defined(TACH_0) && (TACH_0 >-1))
+	if ((fan_speed[0] == 0) && (current_temperature[0] > EXTRUDER_AUTO_FAN_TEMPERATURE)) fan_speed_errors[0]++;
 	else fan_speed_errors[0] = 0;
-
-	if ((fan_speed[1] == 0)&& (fanSpeed > MIN_PRINT_FAN_SPEED)) fan_speed_errors[1]++;
+#endif
+#if (defined(FANCHECK) && defined(TACH_1) && (TACH_1 >-1))
+	if ((fan_speed[1] == 0) && ((blocks_queued() ? block_buffer[block_buffer_tail].fan_speed : fanSpeed) > MIN_PRINT_FAN_SPEED)) fan_speed_errors[1]++;
 	else fan_speed_errors[1] = 0;
+#endif
 
-	if ((fan_speed_errors[0] > 5) && fans_check_enabled) fanSpeedError(0); //extruder fan
-	if ((fan_speed_errors[1] > 15) && fans_check_enabled) fanSpeedError(1); //print fan
+	if ((fan_speed_errors[0] > 5) && fans_check_enabled) {
+		fan_speed_errors[0] = 0;
+		fanSpeedError(0); //extruder fan
+	}
+	if ((fan_speed_errors[1] > 15) && fans_check_enabled) {
+		fan_speed_errors[1] = 0;
+		fanSpeedError(1); //print fan
+	}
 }
 
 extern void stop_and_save_print_to_ram(float z_move, float e_move);
@@ -526,6 +532,7 @@ void fanSpeedError(unsigned char _fan) {
 		break;
 	}
 }
+#endif //(defined(TACH_0) && TACH_0 >-1) || (defined(TACH_1) && TACH_1 > -1)
 
 
 void checkExtruderAutoFans()
@@ -577,7 +584,9 @@ void checkExtruderAutoFans()
 
 void manage_heater()
 {
-	wdt_reset();
+#ifdef WATCHDOG
+    wdt_reset();
+#endif //WATCHDOG
 
   float pid_input;
   float pid_output;
@@ -661,15 +670,15 @@ void manage_heater()
 
     // Check if temperature is within the correct range
 #ifdef AMBIENT_THERMISTOR
-    if(((current_temperature_ambient < MINTEMP_MINAMBIENT) || (current_temperature[e] > minttemp[e])) && (current_temperature[e] < maxttemp[e]))
-#else
-    if((current_temperature[e] > minttemp[e]) && (current_temperature[e] < maxttemp[e]))
-#endif
-
+    if(((current_temperature_ambient < MINTEMP_MINAMBIENT) || (current_temperature[e] > minttemp[e])) && (current_temperature[e] < maxttemp[e])) 
+#else //AMBIENT_THERMISTOR
+    if((current_temperature[e] > minttemp[e]) && (current_temperature[e] < maxttemp[e])) 
+#endif //AMBIENT_THERMISTOR
     {
       soft_pwm[e] = (int)pid_output >> 1;
     }
-    else {
+    else
+	{
       soft_pwm[e] = 0;
     }
 
@@ -708,8 +717,10 @@ void manage_heater()
       (defined(EXTRUDER_2_AUTO_FAN_PIN) && EXTRUDER_2_AUTO_FAN_PIN > -1)
   if(millis() - extruder_autofan_last_check > 1000)  // only need to check fan state very infrequently
   {
+#if (defined(FANCHECK) && ((defined(TACH_0) && (TACH_0 >-1)) || (defined(TACH_1) && (TACH_1 > -1))))
 	countFanSpeed();
 	checkFanSpeed();
+#endif //(defined(TACH_0) && TACH_0 >-1) || (defined(TACH_1) && TACH_1 > -1)
     checkExtruderAutoFans();
     extruder_autofan_last_check = millis();
   }  
@@ -751,11 +762,12 @@ void manage_heater()
     #else 
       pid_output = constrain(target_temperature_bed, 0, MAX_BED_POWER);
     #endif //PID_OPENLOOP
+
 #ifdef AMBIENT_THERMISTOR
 	  if(((current_temperature_bed > BED_MINTEMP) || (current_temperature_ambient < MINTEMP_MINAMBIENT)) && (current_temperature_bed < BED_MAXTEMP)) 
-#else
-    if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP))
-#endif
+#else //AMBIENT_THERMISTOR
+	  if((current_temperature_bed > BED_MINTEMP) && (current_temperature_bed < BED_MAXTEMP)) 
+#endif //AMBIENT_THERMISTOR
 	  {
 	    soft_pwm_bed = (int)pid_output >> 1;
 	  }
@@ -802,27 +814,6 @@ void manage_heater()
     #endif
   #endif
   
-//code for controlling the extruder rate based on the width sensor 
-#ifdef FILAMENT_SENSOR
-  if(filament_sensor) 
-	{
-	meas_shift_index=delay_index1-meas_delay_cm;
-		  if(meas_shift_index<0)
-			  meas_shift_index = meas_shift_index + (MAX_MEASUREMENT_DELAY+1);  //loop around buffer if needed
-		  
-		  //get the delayed info and add 100 to reconstitute to a percent of the nominal filament diameter
-		  //then square it to get an area
-		  
-		  if(meas_shift_index<0)
-			  meas_shift_index=0;
-		  else if (meas_shift_index>MAX_MEASUREMENT_DELAY)
-			  meas_shift_index=MAX_MEASUREMENT_DELAY;
-		  
-		     volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM] = pow((float)(100+measurement_delay[meas_shift_index])/100.0,2);
-		     if (volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM] <0.01)
-		    	 volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]=0.01;
-	}
-#endif
 #ifdef HOST_KEEPALIVE_FEATURE
   host_keepalive();
 #endif
@@ -932,6 +923,36 @@ static float analog2tempBed(int raw) {
   #endif
 }
 
+#ifdef PINDA_THERMISTOR
+
+static float analog2tempPINDA(int raw) {
+
+	float celsius = 0;
+	byte i;
+
+	for (i = 1; i<BEDTEMPTABLE_LEN; i++)
+	{
+		if (PGM_RD_W(BEDTEMPTABLE[i][0]) > raw)
+		{
+			celsius = PGM_RD_W(BEDTEMPTABLE[i - 1][1]) +
+				(raw - PGM_RD_W(BEDTEMPTABLE[i - 1][0])) *
+				(float)(PGM_RD_W(BEDTEMPTABLE[i][1]) - PGM_RD_W(BEDTEMPTABLE[i - 1][1])) /
+				(float)(PGM_RD_W(BEDTEMPTABLE[i][0]) - PGM_RD_W(BEDTEMPTABLE[i - 1][0]));
+			break;
+		}
+	}
+
+	// Overflow: Set to last value in the table
+	if (i == BEDTEMPTABLE_LEN) celsius = PGM_RD_W(BEDTEMPTABLE[i - 1][1]);
+
+	return celsius;
+}
+
+
+#endif //PINDA_THERMISTOR
+
+
+#ifdef AMBIENT_THERMISTOR
 static float analog2tempAmbient(int raw)
 {
     float celsius = 0;
@@ -952,6 +973,7 @@ static float analog2tempAmbient(int raw)
     if (i == AMBIENTTEMPTABLE_LEN) celsius = PGM_RD_W(AMBIENTTEMPTABLE[i-1][1]);
     return celsius;
 }
+#endif //AMBIENT_THERMISTOR
 
 /* Called to get the raw values into the the actual temperatures. The raw values are created in interrupt context,
     and this function is called from normal context as it is too slow to run in interrupts and will block the stepper routine otherwise */
@@ -963,57 +985,32 @@ static void updateTemperaturesFromRawValues()
     }
 
 #ifdef PINDA_THERMISTOR
-	current_temperature_pinda = analog2tempBed(current_temperature_raw_pinda); //thermistor for pinda is the same as for bed
+	current_temperature_pinda = analog2tempBed(current_temperature_raw_pinda);
 #endif
 
 #ifdef AMBIENT_THERMISTOR
 	current_temperature_ambient = analog2tempAmbient(current_temperature_raw_ambient); //thermistor for ambient is NTCG104LH104JT1 (2000)
 #endif
    
+#ifdef DEBUG_HEATER_BED_SIM
+	current_temperature_bed = target_temperature_bed;
+#else //DEBUG_HEATER_BED_SIM
 	current_temperature_bed = analog2tempBed(current_temperature_bed_raw);
+#endif //DEBUG_HEATER_BED_SIM
 
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       redundant_temperature = analog2temp(redundant_temperature_raw, 1);
     #endif
-    #if defined (FILAMENT_SENSOR) && (FILWIDTH_PIN > -1)    //check if a sensor is supported 
-      filament_width_meas = analog2widthFil();
-    #endif  
+
     //Reset the watchdog after we know we have a temperature measurement.
-    watchdog_reset();
+#ifdef WATCHDOG
+    wdt_reset();
+#endif //WATCHDOG
 
     CRITICAL_SECTION_START;
     temp_meas_ready = false;
     CRITICAL_SECTION_END;
 }
-
-
-// For converting raw Filament Width to milimeters 
-#ifdef FILAMENT_SENSOR
-float analog2widthFil() { 
-return current_raw_filwidth/16383.0*5.0; 
-//return current_raw_filwidth; 
-} 
- 
-// For converting raw Filament Width to a ratio 
-int widthFil_to_size_ratio() { 
- 
-float temp; 
-      
-temp=filament_width_meas;
-if(filament_width_meas<MEASURED_LOWER_LIMIT)
-	temp=filament_width_nominal;  //assume sensor cut out
-else if (filament_width_meas>MEASURED_UPPER_LIMIT)
-	temp= MEASURED_UPPER_LIMIT;
-
-
-return(filament_width_nominal/temp*100); 
-
-
-} 
-#endif
-
-
-
 
 
 void tp_init()
@@ -1554,18 +1551,19 @@ void adc_ready(void) //callback from adc when sampling finished
 {
   
 #if 0
-	current_temperature_raw[0] = adc_values[0];
-	current_temperature_bed_raw = adc_values[2];
-  #ifdef PINDA_THERMISTOR
-	current_temperature_raw_pinda = adc_values[3];
-  #endif
-	current_voltage_raw_pwr = adc_values[4];
-  #ifdef AMBIENT_THERMISTOR
-	current_temperature_raw_ambient = adc_values[5];
-  #endif
-	current_voltage_raw_bed = adc_values[6];
+	current_temperature_raw[0] = adc_values[TEMP_0_PIN]; //heater
+	current_temperature_raw_pinda = adc_values[TEMP_PINDA_PIN];
+	current_temperature_bed_raw = adc_values[TEMP_BED_PIN];
+#ifdef VOLT_PWR_PIN
+	current_voltage_raw_pwr = adc_values[VOLT_PWR_PIN];
 #endif
-
+#ifdef AMBIENT_THERMISTOR
+	current_temperature_raw_ambient = adc_values[TEMP_AMBIENT_PIN];
+#endif //AMBIENT_THERMISTOR
+#ifdef VOLT_BED_PIN
+	current_voltage_raw_bed = adc_values[VOLT_BED_PIN]; // 6->9
+#endif
+#endif
   current_temperature_raw[0] = adc_values[0];
   current_temperature_bed_raw = adc_values[1];
 	temp_meas_ready = true;
@@ -1924,7 +1922,9 @@ ISR(TIMER0_COMPB_vect)
   }
 #endif //BABYSTEPPING
 
+#if (defined(FANCHECK) && defined(TACH_0) && (TACH_0 > -1))
   check_fans();
+#endif //(defined(TACH_0))
 
 	_lock = false;
 }
@@ -1978,6 +1978,7 @@ void check_min_temp_bed()
 
 void check_min_temp()
 {
+#ifdef AMBIENT_THERMISTOR
 	static uint8_t heat_cycles = 0;
  #ifdef AMBIENT_THERMISTOR
 	if (current_temperature_raw_ambient > OVERSAMPLENR*MINTEMP_MINAMBIENT_RAW)
@@ -1995,12 +1996,12 @@ void check_min_temp()
 			heat_cycles = 0;
 		return;
 	}
- #endif
+#endif //AMBIENT_THERMISTOR
 	check_min_temp_heater0();
 	check_min_temp_bed();
 }
-
-
+ 
+#if (defined(FANCHECK) && defined(TACH_0) && (TACH_0 > -1))
 void check_fans() {
   #ifdef FAN_TACH
 	if (READ(TACH_0) != fan_state[0]) {
@@ -2013,6 +2014,7 @@ void check_fans() {
 	//}
  #endif
 }
+#endif //TACH_0
 
 
 #ifdef PIDTEMP

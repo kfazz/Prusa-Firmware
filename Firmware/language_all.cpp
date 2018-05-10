@@ -60,6 +60,13 @@ const char * const MSG_AUTO_HOME_LANG_TABLE[1] PROGMEM = {
 	MSG_AUTO_HOME_EN
 };
 
+const char MSG_AUTO_MODE_ON_EN[] PROGMEM = "Mode [auto power]";
+const char MSG_AUTO_MODE_ON_CZ[] PROGMEM = "Mod [automaticky]";
+const char * const MSG_AUTO_MODE_ON_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_AUTO_MODE_ON_EN,
+	MSG_AUTO_MODE_ON_CZ
+};
+
 const char MSG_A_RETRACT_EN[] PROGMEM = "A-retract";
 const char * const MSG_A_RETRACT_LANG_TABLE[1] PROGMEM = {
 	MSG_A_RETRACT_EN
@@ -161,6 +168,13 @@ const char MSG_BED_HEATING_CZ[] PROGMEM = "Zahrivani bed";
 const char * const MSG_BED_HEATING_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_BED_HEATING_EN,
 	MSG_BED_HEATING_CZ
+};
+
+const char MSG_BED_HEATING_SAFETY_DISABLED_EN[] PROGMEM = "Heating disabled by safety timer.";
+const char MSG_BED_HEATING_SAFETY_DISABLED_CZ[] PROGMEM = "Zahrivani preruseno bezpecnostnim casovacem.";
+const char * const MSG_BED_HEATING_SAFETY_DISABLED_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_BED_HEATING_SAFETY_DISABLED_EN,
+	MSG_BED_HEATING_SAFETY_DISABLED_CZ
 };
 
 const char MSG_BED_LEVELING_FAILED_POINT_HIGH_EN[] PROGMEM = "Bed leveling failed. Sensor triggered too high. Waiting for reset.";
@@ -318,6 +332,27 @@ const char MSG_CARD_MENU_CZ[] PROGMEM = "Tisk z SD";
 const char * const MSG_CARD_MENU_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_CARD_MENU_EN,
 	MSG_CARD_MENU_CZ
+};
+
+const char MSG_CHANGED_BOTH_EN[] PROGMEM = "Warning: both printer type and motherboard type changed.";
+const char MSG_CHANGED_BOTH_CZ[] PROGMEM = "Varovani: doslo ke zmene typu tiskarny a motherboardu.";
+const char * const MSG_CHANGED_BOTH_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_CHANGED_BOTH_EN,
+	MSG_CHANGED_BOTH_CZ
+};
+
+const char MSG_CHANGED_MOTHERBOARD_EN[] PROGMEM = "Warning: motherboard type changed.";
+const char MSG_CHANGED_MOTHERBOARD_CZ[] PROGMEM = "Varovani: doslo ke zmene typu motherboardu.";
+const char * const MSG_CHANGED_MOTHERBOARD_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_CHANGED_MOTHERBOARD_EN,
+	MSG_CHANGED_MOTHERBOARD_CZ
+};
+
+const char MSG_CHANGED_PRINTER_EN[] PROGMEM = "Warning: printer type changed.";
+const char MSG_CHANGED_PRINTER_CZ[] PROGMEM = "Varovani: doslo ke zmene typu tiskarny.";
+const char * const MSG_CHANGED_PRINTER_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_CHANGED_PRINTER_EN,
+	MSG_CHANGED_PRINTER_CZ
 };
 
 const char MSG_CHANGE_EXTR_EN[] PROGMEM = "Change extruder";
@@ -599,6 +634,16 @@ const char * const MSG_EXTRUDER_4_LANG_TABLE[1] PROGMEM = {
 	MSG_EXTRUDER_4_EN
 };
 
+const char MSG_EXTRUDER_CORRECTION_EN[] PROGMEM = "E-correct";
+const char * const MSG_EXTRUDER_CORRECTION_LANG_TABLE[1] PROGMEM = {
+	MSG_EXTRUDER_CORRECTION_EN
+};
+
+const char MSG_EXTRUDER_CORRECTION_OFF_EN[] PROGMEM = "  [off";
+const char * const MSG_EXTRUDER_CORRECTION_OFF_LANG_TABLE[1] PROGMEM = {
+	MSG_EXTRUDER_CORRECTION_OFF_EN
+};
+
 const char MSG_E_CAL_KNOB_EN[] PROGMEM = "Rotate knob until mark reaches extruder body. Click when done.";
 const char MSG_E_CAL_KNOB_CZ[] PROGMEM = "Otacejte tlacitkem dokud znacka nedosahne tela extruderu. Potvrdte tlacitkem.";
 const char * const MSG_E_CAL_KNOB_LANG_TABLE[LANG_NUM] PROGMEM = {
@@ -777,6 +822,13 @@ const char MSG_FOLLOW_CALIBRATION_FLOW_CZ[] PROGMEM = "Tiskarna nebyla jeste zka
 const char * const MSG_FOLLOW_CALIBRATION_FLOW_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_FOLLOW_CALIBRATION_FLOW_EN,
 	MSG_FOLLOW_CALIBRATION_FLOW_CZ
+};
+
+const char MSG_FORCE_SELFTEST_EN[] PROGMEM = "Selftest will be run to calibrate accurate sensorless rehoming.";
+const char MSG_FORCE_SELFTEST_CZ[] PROGMEM = "Pro kalibraci presneho rehomovani bude nyni spusten selftest.";
+const char * const MSG_FORCE_SELFTEST_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_FORCE_SELFTEST_EN,
+	MSG_FORCE_SELFTEST_CZ
 };
 
 const char MSG_FREE_MEMORY_EN[] PROGMEM = " Free Memory: ";
@@ -1068,11 +1120,6 @@ const char * const MSG_M105_INVALID_EXTRUDER_LANG_TABLE[1] PROGMEM = {
 const char MSG_M109_INVALID_EXTRUDER_EN[] PROGMEM = "M109 Invalid extruder ";
 const char * const MSG_M109_INVALID_EXTRUDER_LANG_TABLE[1] PROGMEM = {
 	MSG_M109_INVALID_EXTRUDER_EN
-};
-
-const char MSG_M115_REPORT_EN[] PROGMEM = "FIRMWARE_NAME:Marlin V1.0.2; Sprinter/grbl mashup for gen6 FIRMWARE_URL:https://github.com/prusa3d/Prusa-i3-Plus/ PROTOCOL_VERSION:1.0 MACHINE_TYPE:" CUSTOM_MENDEL_NAME " EXTRUDER_COUNT:1 UUID:00000000-0000-0000-0000-000000000000\n";
-const char * const MSG_M115_REPORT_LANG_TABLE[1] PROGMEM = {
-	MSG_M115_REPORT_EN
 };
 
 const char MSG_M117_V2_CALIBRATION_EN[] PROGMEM = "M117 First layer cal.";
@@ -1959,15 +2006,15 @@ const char * const MSG_SHOW_END_STOPS_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_SHOW_END_STOPS_CZ
 };
 
-const char MSG_SILENT_MODE_OFF_EN[] PROGMEM = "Mode     [Normal]";
-const char MSG_SILENT_MODE_OFF_CZ[] PROGMEM = "Mod      [Normal]";
+const char MSG_SILENT_MODE_OFF_EN[] PROGMEM = "Mode [high power]";
+const char MSG_SILENT_MODE_OFF_CZ[] PROGMEM = "Mod  [vys. vykon]";
 const char * const MSG_SILENT_MODE_OFF_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_SILENT_MODE_OFF_EN,
 	MSG_SILENT_MODE_OFF_CZ
 };
 
-const char MSG_SILENT_MODE_ON_EN[] PROGMEM = "Mode    [Stealth]";
-const char MSG_SILENT_MODE_ON_CZ[] PROGMEM = "Mod     [Stealth]";
+const char MSG_SILENT_MODE_ON_EN[] PROGMEM = "Mode     [silent]";
+const char MSG_SILENT_MODE_ON_CZ[] PROGMEM = "Mod       [tichy]";
 const char * const MSG_SILENT_MODE_ON_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_SILENT_MODE_ON_EN,
 	MSG_SILENT_MODE_ON_CZ
@@ -2062,6 +2109,20 @@ const char * const MSG_STATS_TOTALPRINTTIME_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_STATS_TOTALPRINTTIME_CZ
 };
 
+const char MSG_STEALTH_MODE_OFF_EN[] PROGMEM = "Mode     [Normal]";
+const char MSG_STEALTH_MODE_OFF_CZ[] PROGMEM = "Mod      [Normal]";
+const char * const MSG_STEALTH_MODE_OFF_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_STEALTH_MODE_OFF_EN,
+	MSG_STEALTH_MODE_OFF_CZ
+};
+
+const char MSG_STEALTH_MODE_ON_EN[] PROGMEM = "Mode    [Stealth]";
+const char MSG_STEALTH_MODE_ON_CZ[] PROGMEM = "Mod     [Stealth]";
+const char * const MSG_STEALTH_MODE_ON_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_STEALTH_MODE_ON_EN,
+	MSG_STEALTH_MODE_ON_CZ
+};
+
 const char MSG_STEEL_SHEET_CHECK_EN[] PROGMEM = "Is steel sheet on heatbed?";
 const char MSG_STEEL_SHEET_CHECK_CZ[] PROGMEM = "Je tiskovy plat na heatbed?";
 const char * const MSG_STEEL_SHEET_CHECK_LANG_TABLE[LANG_NUM] PROGMEM = {
@@ -2138,8 +2199,8 @@ const char * const MSG_TEMP_CALIBRATION_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_TEMP_CALIBRATION_CZ
 };
 
-const char MSG_TEMP_CALIBRATION_DONE_EN[] PROGMEM = "Temperature calibration is finished. Click to continue.";
-const char MSG_TEMP_CALIBRATION_DONE_CZ[] PROGMEM = "Teplotni kalibrace dokoncena. Pokracujte stiskem tlacitka.";
+const char MSG_TEMP_CALIBRATION_DONE_EN[] PROGMEM = "Temperature calibration is finished and active. Temp. calibration can be disabled in menu Settings->Temp. cal.";
+const char MSG_TEMP_CALIBRATION_DONE_CZ[] PROGMEM = "Teplotni kalibrace dokoncena a je nyni aktivni. Teplotni kalibraci je mozno deaktivovat v menu Nastaveni->Tepl. kal.";
 const char * const MSG_TEMP_CALIBRATION_DONE_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_TEMP_CALIBRATION_DONE_EN,
 	MSG_TEMP_CALIBRATION_DONE_CZ
@@ -2157,6 +2218,13 @@ const char MSG_TEMP_CALIBRATION_ON_CZ[] PROGMEM = "Tepl. kal.  [zap]";
 const char * const MSG_TEMP_CALIBRATION_ON_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_TEMP_CALIBRATION_ON_EN,
 	MSG_TEMP_CALIBRATION_ON_CZ
+};
+
+const char MSG_TEMP_CAL_FAILED_EN[] PROGMEM = "Temperature calibration failed";
+const char MSG_TEMP_CAL_FAILED_CZ[] PROGMEM = "Teplotni kalibrace selhala";
+const char * const MSG_TEMP_CAL_FAILED_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_TEMP_CAL_FAILED_EN,
+	MSG_TEMP_CAL_FAILED_CZ
 };
 
 const char MSG_TEMP_CAL_WARNING_EN[] PROGMEM = "Stable ambient temperature 21-26C is needed a rigid stand is required.";
@@ -2293,6 +2361,13 @@ const char MSG_WAITING_TEMP_CZ[] PROGMEM = "Cekani na zchladnuti trysky a podloz
 const char * const MSG_WAITING_TEMP_LANG_TABLE[LANG_NUM] PROGMEM = {
 	MSG_WAITING_TEMP_EN,
 	MSG_WAITING_TEMP_CZ
+};
+
+const char MSG_WAITING_TEMP_PINDA_EN[] PROGMEM = "Waiting for PINDA probe cooling";
+const char MSG_WAITING_TEMP_PINDA_CZ[] PROGMEM = "Cekani na zchladnuti PINDA";
+const char * const MSG_WAITING_TEMP_PINDA_LANG_TABLE[LANG_NUM] PROGMEM = {
+	MSG_WAITING_TEMP_PINDA_EN,
+	MSG_WAITING_TEMP_PINDA_CZ
 };
 
 const char MSG_WATCH_EN[] PROGMEM = "Info screen";
