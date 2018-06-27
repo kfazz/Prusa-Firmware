@@ -1980,7 +1980,6 @@ void check_min_temp()
 {
 #ifdef AMBIENT_THERMISTOR
 	static uint8_t heat_cycles = 0;
- #ifdef AMBIENT_THERMISTOR
 	if (current_temperature_raw_ambient > OVERSAMPLENR*MINTEMP_MINAMBIENT_RAW)
 	{
 		if (READ(HEATER_0_PIN) == HIGH)

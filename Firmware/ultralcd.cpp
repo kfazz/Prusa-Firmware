@@ -1698,12 +1698,13 @@ static void lcd_menu_debug()
 static void lcd_menu_temperatures()
 {
 	fprintf_P(lcdout, PSTR(ESC_H(1,0)"Nozzle:   %d%c" ESC_H(1,1)"Bed:      %d%c"), (int)current_temperature[0], '\x01', (int)current_temperature_bed, '\x01');
+#ifdef PINDA_THERMISTOR
 #ifdef AMBIENT_THERMISTOR
 	fprintf_P(lcdout, PSTR(ESC_H(1,2)"Ambient:  %d%c" ESC_H(1,3)"PINDA:    %d%c"), (int)current_temperature_ambient, '\x01', (int)current_temperature_pinda, '\x01');
 #else //AMBIENT_THERMISTOR
 	fprintf_P(lcdout, PSTR(ESC_H(1,2)"PINDA:    %d%c"), (int)current_temperature_pinda, '\x01');
 #endif //AMBIENT_THERMISTOR
-
+#endif //PINDA_THERMISTOR
 	if (lcd_clicked())
     {
         lcd_quick_feedback();
@@ -2643,6 +2644,7 @@ void lcd_adjust_z() {
 }
 
 bool lcd_wait_for_pinda(float temp) {
+#ifdef PINDA_THERMISTOR
 	lcd_set_custom_characters_degree();
 	setTargetHotend(0, 0);
 	setTargetBed(0);
@@ -2669,6 +2671,9 @@ bool lcd_wait_for_pinda(float temp) {
 	lcd_set_custom_characters_arrows();
 	lcd_update_enable(true);
 	return(target_temp_reached);
+#else
+	return true;
+#endif
 }
 
 void lcd_wait_for_heater() {

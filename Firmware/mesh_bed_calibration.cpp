@@ -24,7 +24,8 @@ float   world2machine_shift[2];
 #define WEIGHT_FIRST_ROW_Y_LOW  (0.0f)
 
 #define BED_ZERO_REF_X (- 22.f + X_PROBE_OFFSET_FROM_EXTRUDER) // -22 + 23 = 1
-#define BED_ZERO_REF_Y (- 0.6f + Y_PROBE_OFFSET_FROM_EXTRUDER + 4.f) // -0.6 + 5 + 4 = 8.4
+#define BED_ZERO_REF_Y (- 0.6f + Y_PROBE_OFFSET_FROM_EXTRUDER) // MK2
+							       // MK3: -0.6 + 5 + 4 = 8.4
 
 // Scaling of the real machine axes against the programmed dimensions in the firmware.
 // The correction is tiny, here around 0.5mm on 250mm length.
@@ -955,8 +956,8 @@ inline bool find_bed_induction_sensor_point_z(float minimum_z, uint8_t n_iter, i
 //        SERIAL_ECHOLNPGM("");
 		float dz = i?abs(current_position[Z_AXIS] - (z / i)):0;
         z += current_position[Z_AXIS];
-//		printf_P(PSTR(" Z[%d] = %d, dz=%d\n"), i, (int)(current_position[Z_AXIS] * 1000), (int)(dz * 1000));
-		if (dz > 0.05) goto error;//deviation > 50um
+		printf_P(PSTR(" Z[%d] = %d, dz=%d\n"), i, (int)(current_position[Z_AXIS] * 1000), (int)(dz * 1000));
+//		if (dz > 0.05) goto error;//deviation > 50um
     }
     current_position[Z_AXIS] = z;
     if (n_iter > 1)
