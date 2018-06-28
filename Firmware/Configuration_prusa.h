@@ -36,9 +36,9 @@
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,156.46}
 
 // Endstop inverting
-const bool X_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
-const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+#define X_MIN_ENDSTOP_INVERTING  false // set to true to invert the logic of the endstop.
+#define Y_MIN_ENDSTOP_INVERTING  true // set to true to invert the logic of the endstop.
+#define Z_MIN_ENDSTOP_INVERTING  false // set to true to invert the logic of the endstop.
 
 #define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
 #define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
@@ -57,7 +57,7 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define X_MIN_POS 0
 #define Y_MAX_POS 210
 #define Y_MIN_POS -2.2 //orig -4
-#define Z_MAX_POS 210
+#define Z_MAX_POS 209 // was 210
 #define Z_MIN_POS 0.15
 
 // Canceled home position
@@ -551,5 +551,9 @@ const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define FARM_PREHEAT_HPB_TEMP 90
 #define FARM_PREHEAT_HOTEND_TEMP  210
 #define END_FILE_SECTION 10000 //number of bytes from end of file used for checking if file is complete
+#define DEFAULT_SAFETYTIMER_TIME_MINS 30
+#define CRASHDET_COUNTER_MAX 3 
+#define CRASHDET_TIMER 45 //seconds
+#define SUPPORT_VERBOSITY
 
 #endif //__CONFIGURATION_PRUSA_H
