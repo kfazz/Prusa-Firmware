@@ -10,8 +10,8 @@
 #endif
 
 //Ramps Adc usage: t0 and t1 only for now
-#define ADC_CHAN_MSK      0b0110000000000000 //used AD channels bit mask (13,14)
-#define ADC_CHAN_CNT      2         //number of used channels)
+#define ADC_CHAN_MSK      0b1110000000000000 //used AD channels bit mask (13,14, 15)
+#define ADC_CHAN_CNT      3         //number of used channels)
 #define ADC_OVRSAMPL      16        //oversampling multiplier
 #define ADC_CALLBACK      adc_ready //callback function ()
 
