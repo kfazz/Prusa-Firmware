@@ -125,7 +125,7 @@ inline bool world2machine_clamp(float &x, float &y)
     return clamped;
 }
 
-extern bool find_bed_induction_sensor_point_z(float minimum_z = -10.f, uint8_t n_iter = 3, int verbosity_level = 0);
+extern bool find_bed_induction_sensor_point_z(float minimum_z = -10.f, uint8_t n_iter = 3, int verbosity_level = 20);
 extern bool find_bed_induction_sensor_point_xy(int verbosity_level = 0);
 extern void go_home_with_z_lift();
 

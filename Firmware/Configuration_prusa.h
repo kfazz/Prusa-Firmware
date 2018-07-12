@@ -10,11 +10,14 @@
 #define NOZZLE_TYPE "E3Dv6full"
 #define PRINTER_TYPE PRINTER_MK2
 
+//PINDA V2
+#define PINDA_THERMISTOR
+
 // Developer flag
 #define DEVELOPER
 
 // Printer name
-#define CUSTOM_MENDEL_NAME "Prusa i3 CLONE"
+#define CUSTOM_MENDEL_NAME "i3 Bear MK2"
 
 // Electronics
 #define MOTHERBOARD BOARD_RAMPS_14_EFB
@@ -33,7 +36,7 @@
 
 // Steps per unit {X,Y,Z,E}
 //#define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,140}
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,156.46}
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {100,100,3200/8,312.92}//old 156.46 @ 16ms
 
 // Endstop inverting
 #define X_MIN_ENDSTOP_INVERTING  false // set to true to invert the logic of the endstop.
@@ -56,8 +59,8 @@
 #define X_MAX_POS 255
 #define X_MIN_POS 0
 #define Y_MAX_POS 210
-#define Y_MIN_POS -2.2 //orig -4
-#define Z_MAX_POS 209 // was 210
+#define Y_MIN_POS -4 //orig -4
+#define Z_MAX_POS 207 //206 //208 // was 210
 #define Z_MIN_POS 0.15
 
 // Canceled home position
@@ -73,7 +76,7 @@
 #define HOMING_FEEDRATE {2500, 3000, 800, 0}  // set the homing speeds (mm/min) // 3000 is also valid for stallGuard homing. Valid range: 2200 - 3000
 
 //#define DEFAULT_MAX_FEEDRATE          {400, 400, 12, 120}    // (mm/sec)
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 12, 120}    // (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          {200, 200, 12, 120}    // (mm/sec)
 #define DEFAULT_MAX_ACCELERATION      {1000, 1000, 200, 5000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          1250   // X, Y, Z and E max acceleration in mm/s^2 for printing moves
@@ -183,14 +186,14 @@
 #define TMC2130_TCOOLTHRS_E 500       // TCOOLTHRS - coolstep treshold
 
 #define TMC2130_SG_HOMING       1     // stallguard homing
-#define TMC2130_SG_THRS_X       3     // stallguard sensitivity for X axis
+#define TMC2130_SG_THRS_X       4     // stallguard sensitivity for X axis
 #define TMC2130_SG_THRS_Y       3     // stallguard sensitivity for Y axis
 #define TMC2130_SG_THRS_Z       4     // stallguard sensitivity for Z axis
 #define TMC2130_SG_THRS_E       3     // stallguard sensitivity for E axis
 
 //new settings is possible for vsense = 1, running current value > 31 set vsense to zero and shift both currents by 1 bit right (Z axis only)
-#define TMC2130_CURRENTS_H {16, 20, 35, 30}  // default holding currents for all axes
-#define TMC2130_CURRENTS_R {16, 20, 35, 30}  // default running currents for all axes
+#define TMC2130_CURRENTS_H {15, 15, 20, 30}  // default holding currents for all axes
+#define TMC2130_CURRENTS_R {25, 20, 20, 30}  // default running currents for all axes
 #define TMC2130_UNLOAD_CURRENT_R 12			 // lowe current for M600 to protect filament sensor 
 
 #define TMC2130_STEALTH_Z

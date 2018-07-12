@@ -24,8 +24,7 @@ float   world2machine_shift[2];
 #define WEIGHT_FIRST_ROW_Y_LOW  (0.0f)
 
 #define BED_ZERO_REF_X (- 22.f + X_PROBE_OFFSET_FROM_EXTRUDER) // -22 + 23 = 1
-#define BED_ZERO_REF_Y (- 0.6f + Y_PROBE_OFFSET_FROM_EXTRUDER) // MK2
-							       // MK3: -0.6 + 5 + 4 = 8.4
+#define BED_ZERO_REF_Y (- 0.6f + Y_PROBE_OFFSET_FROM_EXTRUDER + 4.f) // -0.6 + 5 + 4 = 8.4
 
 // Scaling of the real machine axes against the programmed dimensions in the firmware.
 // The correction is tiny, here around 0.5mm on 250mm length.
@@ -108,22 +107,11 @@ const float bed_ref_points[] PROGMEM = {
 // Positions of the bed reference points in the machine coordinates, referenced to the P.I.N.D.A sensor.
 // The points are the following: center front, center right, center rear, center left.
 const float bed_ref_points_4[] PROGMEM = {
-	13.f  - BED_ZERO_REF_X,   6.4f - BED_ZERO_REF_Y,
-	216.f - BED_ZERO_REF_X,   6.4f - BED_ZERO_REF_Y,
-	216.f - BED_ZERO_REF_X, 202.4f - BED_ZERO_REF_Y,
-	13.f  - BED_ZERO_REF_X, 202.4f - BED_ZERO_REF_Y
-};
-
-
-
-#if 0
-const float bed_ref_points_4[] PROGMEM = {
 	115.f - BED_ZERO_REF_X,   6.4f - BED_ZERO_REF_Y,
 	216.f - BED_ZERO_REF_X, 104.4f - BED_ZERO_REF_Y,
 	115.f - BED_ZERO_REF_X, 202.4f - BED_ZERO_REF_Y,
-	13.f - BED_ZERO_REF_X, 104.4f - BED_ZERO_REF_Y
+	13.f - BED_ZERO_REF_X,  104.4f - BED_ZERO_REF_Y
 };
-#endif
 
 const float bed_ref_points[] PROGMEM = {
     13.f  - BED_ZERO_REF_X,   6.4f - BED_ZERO_REF_Y,
@@ -1017,7 +1005,7 @@ inline bool find_bed_induction_sensor_point_z(float minimum_z, uint8_t n_iter, i
 		float dz = i?abs(current_position[Z_AXIS] - (z / i)):0;
         z += current_position[Z_AXIS];
 		printf_P(PSTR(" Z[%d] = %d, dz=%d\n"), i, (int)(current_position[Z_AXIS] * 1000), (int)(dz * 1000));
-//		if (dz > 0.05) goto error;//deviation > 50um
+		if (dz > 0.05) goto error;//deviation > 50um
     }
     current_position[Z_AXIS] = z;
     if (n_iter > 1)
@@ -1026,14 +1014,14 @@ inline bool find_bed_induction_sensor_point_z(float minimum_z, uint8_t n_iter, i
 
     enable_endstops(endstops_enabled);
     enable_z_endstop(endstop_z_enabled);
-//    SERIAL_ECHOLNPGM("find_bed_induction_sensor_point_z 3");
+    SERIAL_ECHOLNPGM("find_bed_induction_sensor_point_z 3");
 #ifdef TMC2130
 	FORCE_HIGH_POWER_END;
 #endif
 	return true;
 
 error:
-//    SERIAL_ECHOLNPGM("find_bed_induction_sensor_point_z 4");
+    SERIAL_ECHOLNPGM("find_bed_induction_sensor_point_z 4");
     enable_endstops(endstops_enabled);
     enable_z_endstop(endstop_z_enabled);
 #ifdef TMC2130
@@ -1049,11 +1037,11 @@ extern bool xyzcal_find_bed_induction_sensor_point_xy();
 // look for the induction sensor response.
 // Adjust the  current_position[X,Y,Z] to the center of the target dot and its response Z coordinate.
 #define FIND_BED_INDUCTION_SENSOR_POINT_X_RADIUS (8.f)
-#define FIND_BED_INDUCTION_SENSOR_POINT_Y_RADIUS (4.f)
+#define FIND_BED_INDUCTION_SENSOR_POINT_Y_RADIUS (6.f)
 #define FIND_BED_INDUCTION_SENSOR_POINT_XY_STEP  (1.f)
 #ifdef HEATBED_V2
 #define FIND_BED_INDUCTION_SENSOR_POINT_Z_STEP   (2.f)
-#define FIND_BED_INDUCTION_SENSOR_POINT_MAX_Z_ERROR (1.00f) // (0.03f)
+#define FIND_BED_INDUCTION_SENSOR_POINT_MAX_Z_ERROR  (0.03f)
 #else //HEATBED_V2
 #define FIND_BED_INDUCTION_SENSOR_POINT_Z_STEP   (0.2f)
 #endif //HEATBED_V2
@@ -2282,7 +2270,7 @@ BedSkewOffsetDetectionResultType find_bed_offset_and_skew(int8_t verbosity_level
 #ifndef NEW_XYZCAL
 #ifndef HEATBED_V2
 		
-			if (k == 0 || k == 1) {
+			if (k == 0 /*|| k == 1*/) {
 				// Improve the position of the 1st row sensor points by a zig-zag movement.
 				find_bed_induction_sensor_point_z();
 				int8_t i = 4;
