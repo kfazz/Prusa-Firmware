@@ -186,7 +186,7 @@
 #define TMC2130_TCOOLTHRS_E 500       // TCOOLTHRS - coolstep treshold
 
 #define TMC2130_SG_HOMING       1     // stallguard homing
-#define TMC2130_SG_THRS_X       4     // stallguard sensitivity for X axis
+#define TMC2130_SG_THRS_X       5     // stallguard sensitivity for X axis
 #define TMC2130_SG_THRS_Y       3     // stallguard sensitivity for Y axis
 #define TMC2130_SG_THRS_Z       4     // stallguard sensitivity for Z axis
 #define TMC2130_SG_THRS_E       3     // stallguard sensitivity for E axis
@@ -485,7 +485,7 @@
 #elif defined(E3D_PT100_BED_NO_AMP)
 #define TEMP_SENSOR_BED 148
 #else
-#define TEMP_SENSOR_BED 1
+#define TEMP_SENSOR_BED 11  //Orballo MK42 Clone
 #endif
 #define TEMP_SENSOR_PINDA 1
 #define TEMP_SENSOR_AMBIENT 2000
@@ -501,9 +501,9 @@
 #define Z_BABYSTEP_MIN -3999
 #define Z_BABYSTEP_MAX 0
 
-#define PINDA_PREHEAT_X 70
-#define PINDA_PREHEAT_Y -3
-#define PINDA_PREHEAT_Z 1
+#define PINDA_PREHEAT_X 20
+#define PINDA_PREHEAT_Y 60
+#define PINDA_PREHEAT_Z 0.15
 #define PINDA_HEAT_T 120 //time in s
 
 #define PINDA_MIN_T 50

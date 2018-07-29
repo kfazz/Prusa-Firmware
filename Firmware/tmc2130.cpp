@@ -30,7 +30,7 @@ uint8_t tmc2130_current_h[4] = TMC2130_CURRENTS_H;
 uint8_t tmc2130_current_r[4] = TMC2130_CURRENTS_R;
 
 //running currents for homing
-uint8_t tmc2130_current_r_home[4] = {10, 10, 18, 18}; //x was 27 previously
+uint8_t tmc2130_current_r_home[4] = {27, 10, 10, 18}; //x was 27 previously
 
 //pwm_ampl
 uint8_t tmc2130_pwm_ampl[4] = {TMC2130_PWM_AMPL_X, TMC2130_PWM_AMPL_Y, TMC2130_PWM_AMPL_Z, TMC2130_PWM_AMPL_E};
