@@ -7113,7 +7113,7 @@ static bool lcd_selfcheck_axis_sg(unsigned char axis) {
 	float margin = 60;
 	float max_error_mm = 5;
 	switch (axis) {
-	case 0: axis_length = X_MAX_POS; break;
+	case 0: axis_length = X_MAX_POS - X_MIN_POS; break;
 	case 1: axis_length = Y_MAX_POS + 8; break;
 	default: axis_length = 210; break;
 	}
