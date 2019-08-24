@@ -919,7 +919,7 @@ static inline void go_xy(float x, float y, float fr)
 
 static inline void go_to_current(float fr)
 {
-    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], fr, active_extruder);
+    plan_buffer_line_curposXYZE(fr, active_extruder);
     st_synchronize();
 }
 
@@ -2769,7 +2769,7 @@ bool sample_z() {
 	//make space
 	current_position[Z_AXIS] += 150;
 	go_to_current(homing_feedrate[Z_AXIS] / 60);
-	//plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder););
+	//plan_buffer_line_curposXYZE(feedrate, active_extruder););
 
 	lcd_show_fullscreen_message_and_wait_P(_T(MSG_PLACE_STEEL_SHEET));
 
@@ -3031,7 +3031,8 @@ void babystep_load()
         check_babystep(); //checking if babystep is in allowed range, otherwise setting babystep to 0
         
         // End of G80: Apply the baby stepping value.
-        EEPROM_read_B(EEPROM_BABYSTEP_Z, &babystepLoadZ);
+        babystepLoadZ = eeprom_read_word(reinterpret_cast<uint16_t *>(&(EEPROM_Sheets_base->
+                    s[(eeprom_read_byte(&(EEPROM_Sheets_base->active_sheet)))].z_offset)));
                             
     #if 0
         SERIAL_ECHO("Z baby step: ");
