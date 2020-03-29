@@ -27,6 +27,8 @@
   #include "stepper.h"
 #endif
 
+#include "config.h"
+
 
 #ifdef SYSTEM_TIMER_2
 
@@ -44,6 +46,8 @@
 // public functions
 void tp_init();  //initialize the heating
 void manage_heater(); //it is critical that this is called periodically.
+
+extern bool checkAllHotends(void);
 
 // low level conversion routines
 // do not use these routines and variables outside of temperature.cpp
@@ -74,13 +78,15 @@ extern int current_voltage_raw_pwr;
 extern int current_voltage_raw_bed;
 #endif
 
-#ifdef TEMP_SENSOR_1_AS_REDUNDANT
-  extern float redundant_temperature;
-#endif
+#ifdef IR_SENSOR_ANALOG
+extern int current_voltage_raw_IR;
+#endif //IR_SENSOR_ANALOG
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
   extern unsigned char soft_pwm_bed;
 #endif
+
+extern bool bedPWMDisabled;
 
 #ifdef PIDTEMP
   extern int pid_cycle, pid_number_of_cycles;
@@ -218,9 +224,11 @@ FORCE_INLINE bool isCoolingBed() {
 #error Invalid number of extruders
 #endif
 
+// return "false", if all heaters are 'off' (ie. "true", if any heater is 'on')
+#define CHECK_ALL_HEATERS (checkAllHotends()||(target_temperature_bed!=0))
+
 int getHeaterPower(int heater);
 void disable_heater();
-void setWatch();
 void updatePID();
 
 
@@ -245,6 +253,7 @@ void checkExtruderAutoFans();
 
 enum { 
 	EFCE_OK = 0,   //!< normal operation, both fans are ok
+	EFCE_FIXED,    //!< previous fan error was fixed
 	EFCE_DETECTED, //!< fan error detected, but not reported yet
 	EFCE_REPORTED  //!< fan error detected and reported to LCD and serial
 };

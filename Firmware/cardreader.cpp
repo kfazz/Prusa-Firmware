@@ -25,7 +25,6 @@ CardReader::CardReader()
    sdpos = 0;
    sdprinting = false;
    cardOK = false;
-   paused = false;
    saving = false;
    logging = false;
    autostart_atmillis=0;
@@ -137,8 +136,17 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
 						SERIAL_ECHOPGM("Access date: ");
 						MYSERIAL.println(p.lastAccessDate);
 						SERIAL_ECHOLNPGM("");*/
-						creationDate = p.creationDate;
-						creationTime = p.creationTime;
+						crmodDate = p.lastWriteDate;
+						crmodTime = p.lastWriteTime;
+						// There are scenarios when simple modification time is not enough (on MS Windows)
+						// For example - extract an old g-code from an archive onto the SD card.
+						// In such case the creation time is current time (which is correct), but the modification time
+						// stays the same - i.e. old.
+						// Therefore let's pick the most recent timestamp from both creation and modification timestamps
+						if( crmodDate < p.creationDate || ( crmodDate == p.creationDate && crmodTime < p.creationTime ) ){
+							crmodDate = p.creationDate;
+							crmodTime = p.creationTime;
+						}
 						//writeDate = p.lastAccessDate;
 						if (match != NULL) {
 							if (strcasecmp(match, filename) == 0) return;
@@ -203,6 +211,7 @@ void CardReader::initsd()
   }
   workDir=root;
   curDir=&root;
+  workDirDepth = 0;
 
   #ifdef SDCARD_SORT_ALPHA
 	presort();
@@ -241,23 +250,12 @@ void CardReader::startFileprint()
   if(cardOK)
   {
     sdprinting = true;
-	paused = false;
-     Stopped = false;
+    Stopped = false;
 	#ifdef SDCARD_SORT_ALPHA
 		//flush_presort();
 	#endif
   }
 }
-
-void CardReader::pauseSDPrint()
-{
-  if(sdprinting)
-  {
-    sdprinting = false;
-	paused = true;
-  }
-}
-
 
 void CardReader::openLogFile(const char* name)
 {
@@ -370,10 +368,10 @@ void CardReader::openFile(const char* name,bool read, bool replace_current/*=tru
     {
      if((int)file_subcall_ctr>(int)SD_PROCEDURE_DEPTH-1)
      {
-       SERIAL_ERROR_START;
-       SERIAL_ERRORPGM("trying to call sub-gcode files with too many levels. MAX level is:");
-       SERIAL_ERRORLN(SD_PROCEDURE_DEPTH);
-       kill("", 1);
+       // SERIAL_ERROR_START;
+       // SERIAL_ERRORPGM("trying to call sub-gcode files with too many levels. MAX level is:");
+       // SERIAL_ERRORLN(SD_PROCEDURE_DEPTH);
+       kill(_n("trying to call sub-gcode files with too many levels."), 1);
        return;
      }
      
@@ -407,9 +405,7 @@ void CardReader::openFile(const char* name,bool read, bool replace_current/*=tru
     SERIAL_ECHOLN(name);
   }
   sdprinting = false;
-  paused = false;
-  
- 
+
   SdFile myDir;
   const char *fname=name;
   diveSubfolder(fname,myDir);
@@ -491,24 +487,27 @@ uint32_t CardReader::getFileSize()
 
 void CardReader::getStatus()
 {
-  if(sdprinting){
-    SERIAL_PROTOCOL(longFilename);
-    SERIAL_PROTOCOLPGM("\n");
-    SERIAL_PROTOCOLRPGM(_N("SD printing byte "));////MSG_SD_PRINTING_BYTE
-    SERIAL_PROTOCOL(sdpos);
-    SERIAL_PROTOCOLPGM("/");
-    SERIAL_PROTOCOLLN(filesize);
-    uint16_t time = _millis()/60000 - starttime/60000;
-    SERIAL_PROTOCOL(itostr2(time/60));
-    SERIAL_PROTOCOL(':');
-    SERIAL_PROTOCOL(itostr2(time%60));
-    SERIAL_PROTOCOLPGM("\n");
-  }
-  else if (paused) {
-	SERIAL_PROTOCOLLNPGM("SD print paused");
-  }
-  else if (saved_printing) {
-	SERIAL_PROTOCOLLNPGM("Print saved");
+  if(sdprinting)
+  {
+      if (isPrintPaused) {
+          SERIAL_PROTOCOLLNPGM("SD print paused");
+      }
+      else if (saved_printing) {
+          SERIAL_PROTOCOLLNPGM("Print saved");
+      }
+      else {
+          SERIAL_PROTOCOL(longFilename);
+          SERIAL_PROTOCOLPGM("\n");
+          SERIAL_PROTOCOLRPGM(_N("SD printing byte "));////MSG_SD_PRINTING_BYTE
+          SERIAL_PROTOCOL(sdpos);
+          SERIAL_PROTOCOLPGM("/");
+          SERIAL_PROTOCOLLN(filesize);
+          uint16_t time = _millis()/60000 - starttime/60000;
+          SERIAL_PROTOCOL(itostr2(time/60));
+          SERIAL_PROTOCOL(':');
+          SERIAL_PROTOCOL(itostr2(time%60));
+          SERIAL_PROTOCOLPGM("\n");
+      }
   }
   else {
     SERIAL_PROTOCOLLNPGM("Not SD printing");
@@ -762,8 +761,8 @@ void CardReader::presort() {
 		#endif
 		#elif SDSORT_USES_STACK
 		char sortnames[fileCnt][LONG_FILENAME_LENGTH];
-		uint16_t creation_time[fileCnt];
-		uint16_t creation_date[fileCnt];
+		uint16_t modification_time[fileCnt];
+		uint16_t modification_date[fileCnt];
 		#endif
 
 		// Folder sorting needs 1 bit per entry for flags.
@@ -783,8 +782,8 @@ void CardReader::presort() {
 		// retaining only two filenames at a time. This is very
 		// slow but is safest and uses minimal RAM.
 		char name1[LONG_FILENAME_LENGTH + 1];
-		uint16_t creation_time_bckp;
-		uint16_t creation_date_bckp;
+		uint16_t crmod_time_bckp;
+		uint16_t crmod_date_bckp;
 
 		#endif
 		position = 0;
@@ -810,8 +809,8 @@ void CardReader::presort() {
 				#else
 				// Copy filenames into the static array
 				strcpy(sortnames[i], LONGEST_FILENAME);
-				creation_time[i] = creationTime;
-				creation_date[i] = creationDate;
+				modification_time[i] = crmodTime;
+				modification_date[i] = crmodDate;
 				#if SDSORT_CACHE_NAMES
 				strcpy(sortshort[i], filename);
 				#endif
@@ -836,12 +835,12 @@ void CardReader::presort() {
 			// Compare names from the array or just the two buffered names
 			#if SDSORT_USES_RAM
 			#define _SORT_CMP_NODIR() (strcasecmp(sortnames[o1], sortnames[o2]) > 0)
-			#define _SORT_CMP_TIME_NODIR() (((creation_date[o1] == creation_date[o2]) && (creation_time[o1] < creation_time[o2])) || \
-																	(creation_date[o1] < creation_date [o2]))
+			#define _SORT_CMP_TIME_NODIR() (((modification_date[o1] == modification_date[o2]) && (modification_time[o1] < modification_time[o2])) || \
+																	(modification_date[o1] < modification_date [o2]))
 			#else
 			#define _SORT_CMP_NODIR() (strcasecmp(name1, name2) > 0) //true if lowercase(name1) > lowercase(name2)
-			#define _SORT_CMP_TIME_NODIR() (((creation_date_bckp == creationDate) && (creation_time_bckp > creationTime)) || \
-																	(creation_date_bckp > creationDate))
+			#define _SORT_CMP_TIME_NODIR() (((crmod_date_bckp == crmodDate) && (crmod_time_bckp > crmodTime)) || \
+																	(crmod_date_bckp > crmodDate))
 
 			#endif
 
@@ -892,8 +891,8 @@ void CardReader::presort() {
 					counter++;
 					getfilename_simple(positions[o1]);
 					strcpy(name1, LONGEST_FILENAME); // save (or getfilename below will trounce it)
-					creation_date_bckp = creationDate;
-					creation_time_bckp = creationTime;
+					crmod_date_bckp = crmodDate;
+					crmod_time_bckp = crmodTime;
 					#if HAS_FOLDER_SORTING
 					bool dir1 = filenameIsDir;
 					#endif

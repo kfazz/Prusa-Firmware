@@ -146,38 +146,37 @@ void manage_inactivity(bool ignore_stepper_queue=false);
 #if defined(Z_ENABLE_PIN) && Z_ENABLE_PIN > -1 
 	#if defined(Z_AXIS_ALWAYS_ON)
 		  #ifdef Z_DUAL_STEPPER_DRIVERS
-			#define  enable_z() { WRITE(Z_ENABLE_PIN, Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN, Z_ENABLE_ON); }
-			#define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+			#define  poweron_z() { WRITE(Z_ENABLE_PIN, Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN, Z_ENABLE_ON); }
+			#define poweroff_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
 		  #else
-			#define  enable_z() WRITE(Z_ENABLE_PIN, Z_ENABLE_ON)
-			#define  disable_z() {}
+			#define  poweron_z() WRITE(Z_ENABLE_PIN, Z_ENABLE_ON)
+			#define poweroff_z() {}
 		  #endif
 	#else
 		#ifdef Z_DUAL_STEPPER_DRIVERS
-			#define  enable_z() { WRITE(Z_ENABLE_PIN, Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN, Z_ENABLE_ON); }
-			#define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+			#define  poweron_z() { WRITE(Z_ENABLE_PIN, Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN, Z_ENABLE_ON); }
+			#define poweroff_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
 		#else
-			#define  enable_z() WRITE(Z_ENABLE_PIN, Z_ENABLE_ON)
-			#define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+			#define  poweron_z() WRITE(Z_ENABLE_PIN, Z_ENABLE_ON)
+			#define poweroff_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
 		#endif
 	#endif
 #else
-  #define enable_z() {}
-  #define disable_z() {}
+    #define  poweron_z() {}
+    #define poweroff_z() {}
 #endif
 
-#ifdef PSU_Delta
+#ifndef PSU_Delta
+    #define  enable_z()  poweron_z()
+    #define disable_z() poweroff_z()
+#else
     void init_force_z();
     void check_force_z();
-    #undef disable_z
-    #define disable_z() disable_force_z()
-    void disable_force_z();
-    #undef enable_z
-    #define enable_z() enable_force_z()
     void enable_force_z();
+    void disable_force_z();
+    #define  enable_z()  enable_force_z()
+    #define disable_z() disable_force_z()
 #endif // PSU_Delta
-
-
 
 
 //#if defined(Z_ENABLE_PIN) && Z_ENABLE_PIN > -1
@@ -295,7 +294,8 @@ void setPwmFrequency(uint8_t pin, int val);
 
 extern bool fans_check_enabled;
 extern float homing_feedrate[];
-extern bool axis_relative_modes[];
+extern uint8_t axis_relative_modes;
+extern float feedrate;
 extern int feedmultiply;
 extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
 extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
@@ -307,16 +307,12 @@ extern float max_pos[3];
 extern bool axis_known_position[3];
 extern int fanSpeed;
 extern int8_t lcd_change_fil_state;
-
-const char smooth1[] PROGMEM = "Smooth1";
-const char smooth2[] PROGMEM = "Smooth2";
-const char textured[] PROGMEM = "Textur1";
-const char *const defaultSheetNames[] PROGMEM = {smooth1,smooth2,textured};
+extern float default_retraction;
 
 #ifdef TMC2130
-void homeaxis(int axis, uint8_t cnt = 1, uint8_t* pstep = 0);
+bool homeaxis(int axis, bool doError = true, uint8_t cnt = 1, uint8_t* pstep = 0);
 #else
-void homeaxis(int axis, uint8_t cnt = 1);
+bool homeaxis(int axis, bool doError = true, uint8_t cnt = 1);
 #endif //TMC2130
 
 
@@ -363,9 +359,6 @@ extern int fan_speed[2];
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
 
-
-#endif
-
 //Long pause
 extern unsigned long pause_time;
 extern unsigned long start_pause_print;
@@ -381,6 +374,10 @@ extern char dir_names[3][9];
 extern int8_t lcd_change_fil_state;
 // save/restore printing
 extern bool saved_printing;
+extern uint8_t saved_printing_type;
+#define PRINTING_TYPE_SD 0
+#define PRINTING_TYPE_USB 1
+#define PRINTING_TYPE_NONE 2
 
 //save/restore printing in case that mmu is not responding
 extern bool mmu_print_saved;
@@ -396,12 +393,10 @@ extern uint16_t print_time_remaining_silent;
 extern uint16_t mcode_in_progress;
 extern uint16_t gcode_in_progress;
 
-extern bool wizard_active; //autoload temporarily disabled during wizard
-
 extern LongTimer safetyTimer;
 
 #define PRINT_PERCENT_DONE_INIT   0xff
-#define PRINTER_ACTIVE (IS_SD_PRINTING || is_usb_printing || isPrintPaused || (custom_message_type == CustomMsg::TempCal) || saved_printing || (lcd_commands_type == LcdCommands::Layer1Cal) || card.paused || mmu_print_saved)
+#define PRINTER_ACTIVE (IS_SD_PRINTING || is_usb_printing || isPrintPaused || (custom_message_type == CustomMsg::TempCal) || saved_printing || (lcd_commands_type == LcdCommands::Layer1Cal) || mmu_print_saved)
 
 //! Beware - mcode_in_progress is set as soon as the command gets really processed,
 //! which is not the same as posting the M600 command into the command queue
@@ -430,8 +425,6 @@ void bed_analysis(float x_dimension, float y_dimension, int x_points_num, int y_
 void bed_check(float x_dimension, float y_dimension, int x_points_num, int y_points_num, float shift_x, float shift_y);
 #endif //HEATBED_ANALYSIS
 float temp_comp_interpolation(float temperature);
-void temp_compensation_apply();
-void temp_compensation_start();
 void show_fw_version_warnings();
 uint8_t check_printer_version();
 
@@ -451,9 +444,8 @@ void setup_uvlo_interrupt();
 void setup_fan_interrupt();
 #endif
 
-//extern void recover_machine_state_after_power_panic();
-extern void recover_machine_state_after_power_panic(bool bTiny);
-extern void restore_print_from_eeprom();
+extern bool recover_machine_state_after_power_panic();
+extern void restore_print_from_eeprom(bool mbl_was_active);
 extern void position_menu();
 
 extern void print_world_coordinates();
@@ -462,6 +454,7 @@ extern void print_mesh_bed_leveling_table();
 
 extern void stop_and_save_print_to_ram(float z_move, float e_move);
 extern void restore_print_from_ram_and_continue(float e_move);
+extern void cancel_saved_printing();
 
 
 //estimated time to end of the print
@@ -518,4 +511,6 @@ void M600_wait_for_user(float HotendTempBckp);
 void M600_check_state(float nozzle_temp);
 void load_filament_final_feed();
 void marlin_wait_for_click();
-void marlin_rise_z(void);
+void raise_z_above(float target, bool plan=true);
+
+#endif

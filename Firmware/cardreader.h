@@ -25,7 +25,6 @@ public:
   void closefile(bool store_location=false);
   void release();
   void startFileprint();
-  void pauseSDPrint();
   uint32_t getFileSize();
   void getStatus();
   void printingHasFinished();
@@ -75,9 +74,10 @@ public:
   bool logging;
   bool sdprinting ;  
   bool cardOK ;
-  bool paused ;
   char filename[13];
-  uint16_t creationTime, creationDate;
+  // There are scenarios when simple modification time is not enough (on MS Windows)
+  // Therefore these timestamps hold the most recent one of creation/modification date/times
+  uint16_t crmodTime, crmodDate;
   uint32_t cluster, position;
   char longFilename[LONG_FILENAME_LENGTH];
   bool filenameIsDir;
@@ -114,8 +114,8 @@ private:
     #endif
   #elif !SDSORT_USES_STACK
     char sortnames[SDSORT_LIMIT][FILENAME_LENGTH];
-    uint16_t creation_time[SDSORT_LIMIT];
-    uint16_t creation_date[SDSORT_LIMIT];
+    uint16_t modification_time[SDSORT_LIMIT];
+    uint16_t modification_date[SDSORT_LIMIT];
   #endif
 
   // Folder sorting uses an isDir array when caching items.
